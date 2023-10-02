@@ -46,16 +46,16 @@ jq \
 nfs-utils
 
 # Set profile in /etc/profile
-cp -f configs/commons/profile-ol9 /etc/profile
+cp -f configs/profile-ol9 /etc/profile
 dos2unix /etc/profile
 
 # Set vim profile
-cp -f configs/commons/.vimrc .
+cp -f configs/.vimrc .
 dos2unix .vimrc
 chown vagrant:vagrant .vimrc
 
 # Set bash session
-cp -f configs/commons/.bashrc-ol9 .bashrc
+cp -f configs/.bashrc-ol9 .bashrc
 dos2unix .bashrc
 chown vagrant:vagrant .bashrc
 
@@ -63,7 +63,7 @@ chown vagrant:vagrant .bashrc
 cp -f .bashrc .vimrc /root/
 
 # Enabling IP forwarding on Linux
-cp configs/commons/sysctl.conf /etc
+cp configs/sysctl.conf /etc
 dos2unix /etc/sysctl.conf
 systemctl daemon-reload
 
@@ -71,7 +71,7 @@ systemctl daemon-reload
 if [ -f "/etc/ssh/sshd_config.d/50-redhat.conf" ]; then
     rm /etc/ssh/sshd_config.d/50-redhat.conf
 fi
-cp -f configs/commons/01-sshd-custom.conf /etc/ssh/sshd_config.d
+cp -f configs/01-sshd-custom.conf /etc/ssh/sshd_config.d
 dos2unix /etc/ssh/sshd_config.d/01-sshd-custom.conf
 chmod 644 /etc/ssh/sshd_config.d/01-sshd-custom.conf
 systemctl restart sshd
@@ -89,7 +89,7 @@ dnf install -y xorg-x11-server-Xorg.x86_64 xorg-x11-xauth.x86_64 \
 xorg-x11-server-utils.x86_64 xorg-x11-utils.x86_64
 
 # Enable sadc collected system activity
-cp -f configs/commons/sysstat /etc/default/
+cp -f configs/sysstat /etc/default/
 dos2unix /etc/default/sysstat
 systemctl start sysstat sysstat-collect.timer sysstat-summary.timer
 systemctl enable sysstat sysstat-collect.timer sysstat-summary.timer
@@ -97,11 +97,12 @@ systemctl enable sysstat sysstat-collect.timer sysstat-summary.timer
 # Set Default DNS Server
 
 ## Copy host file
-cp -f configs/commons/hosts /etc
+cp -f configs/hosts /etc
 dos2unix /etc/hosts
+hostnamectl set-hostname backstage.skynet.com.b
 
 ## Set Networkmanager
-cp -f configs/commons/01-NetworkManager-custom.conf /etc/NetworkManager/conf.d/
+cp -f configs/01-NetworkManager-custom.conf /etc/NetworkManager/conf.d/
 dos2unix /etc/NetworkManager/conf.d/01-NetworkManager-custom.conf
 systemctl reload NetworkManager
 
