@@ -109,7 +109,3 @@ systemctl reload NetworkManager
 # Set iscsid
 systemctl start iscsid.service
 systemctl enable iscsid.service
-
-# Install Backstage
-
-
