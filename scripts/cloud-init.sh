@@ -43,7 +43,8 @@ lvm2 \
 cryptsetup  \
 iscsi-initiator-utils \
 jq \
-nfs-utils
+nfs-utils \
+yum-utils
 
 # Set profile in /etc/profile
 cp -f configs/profile-ol9 /etc/profile

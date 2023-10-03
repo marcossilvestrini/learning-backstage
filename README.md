@@ -6,3 +6,4 @@
 
 ## Get Started
 
+[Spotify Tutorial](https://backstage.spotify.com/blog/introducing-backstage-learn)
