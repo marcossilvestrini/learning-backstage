@@ -40,9 +40,10 @@ sudo systemctl start docker
 sudo systemctl enable docker
 sudo usermod -aG docker vagrant
 sudo setfacl --modify user:vagrant:rw /var/run/docker.sock
-sudo docker run hello-world
+#sudo docker run hello-world
 
-#Create backstage app
+
+# Create backstage app
 if ! [ -d "/opt/backstage/skynet" ]; then
     sudo mkdir -p /opt/backstage
     sudo chown -R vagrant:vagrant /opt/backstage && sudo chmod -R 0777 /opt/backstage    
@@ -52,4 +53,16 @@ echo "skynet" | npx @backstage/create-app@latest
 cd skynet || exit
 yarn install
 sudo chown -R  vagrant:vagrant /opt/backstage/
+
+# Set app-config.yaml
+cp /home/vagrant/configs/app-config.yaml  /opt/backstage/skynet
+SECRETS_FILE="security/backstage-secrets.yaml"
+CONFIG_FILE="/opt/backstage/skynet/app-config.yaml"
+GITHUB_TOKEN=$(grep 'GITHUB_TOKEN' "$SECRETS_FILE" | awk '{print $2}')
+GITHUB_CLIENT_ID=$(grep 'GITHUB_CLIENT_ID' "$SECRETS_FILE" | awk '{print $2}')
+GITHUB_CLIENT_SECRET=$(grep 'GITHUB_CLIENT_SECRET' "$SECRETS_FILE" | awk '{print $2}')
+sed -i "s/\${AUTH_GITHUB_CLIENT_ID}/$GITHUB_CLIENT_ID/g" "$CONFIG_FILE"
+sed -i "s/\${AUTH_GITHUB_CLIENT_SECRET}/$GITHUB_CLIENT_SECRET/g" "$CONFIG_FILE"
+
+# Start app
 yarn dev
