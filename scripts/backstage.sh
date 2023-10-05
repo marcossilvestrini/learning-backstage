@@ -42,7 +42,7 @@ sudo usermod -aG docker vagrant
 sudo setfacl --modify user:vagrant:rw /var/run/docker.sock
 sudo docker run hello-world
 
-Create backstage app
+#Create backstage app
 if ! [ -d "/opt/backstage/skynet" ]; then
     sudo mkdir -p /opt/backstage
     sudo chown -R vagrant:vagrant /opt/backstage && sudo chmod -R 0777 /opt/backstage    
@@ -51,4 +51,5 @@ cd /opt/backstage || exit
 echo "skynet" | npx @backstage/create-app@latest
 cd skynet || exit
 yarn install
+sudo chown -R  vagrant:vagrant /opt/backstage/
 yarn dev
