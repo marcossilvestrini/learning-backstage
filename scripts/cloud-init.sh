@@ -44,7 +44,8 @@ cryptsetup  \
 iscsi-initiator-utils \
 jq \
 nfs-utils \
-yum-utils
+yum-utils \
+rsync
 
 # Set profile in /etc/profile
 cp -f configs/profile-ol9 /etc/profile
