@@ -37,7 +37,7 @@ rsync -av --exclude="node_modules" --exclude=dist-types --exclude=.git /opt/back
 # Check if the cron job already exists
 if ! crontab -l | grep -q 'rsync'; then
   # If it doesn't exist, add the new cron job
-  (crontab -l ; echo '* * * * * rsync -av --exclude="node_modules" --exclude=dist-types --exclude=.git /opt/backstage/skynet/ /home/vagrant/backstage/skynet/') | crontab -
+  (crontab -l ; echo '* * * * * rsync -av --exclude=node_modules --exclude=dist-types --exclude=.git /opt/backstage/skynet/ /home/vagrant/backstage/skynet/') | crontab -
   echo "Cron job added successfully."
 else
   echo "The cron job already exists."
