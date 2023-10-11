@@ -32,7 +32,7 @@ fi
 if [ ! -d "$WORKDIR/backstage/skynet" ]; then
   mkdir -p "$WORKDIR/backstage/skynet"
 fi
-rsync -av --exclude="node_modules" --exclude=dist-types --exclude=.git /opt/backstage/skynet/ /home/vagrant/backstage/skynet/
+rsync -av --exclude=node_modules --exclude=dist-types --exclude=.git /opt/backstage/skynet/ /home/vagrant/backstage/skynet/
 
 # Check if the cron job already exists
 if ! crontab -l | grep -q 'rsync'; then

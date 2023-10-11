@@ -25,5 +25,6 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", name: "[SCRIPT NGINX.SH]", path: "../scripts/nginx.sh"
   config.vm.provision "shell", name: "[SCRIPT POSTGRESQL.SH]", privileged: true, path: "../scripts/postgresql.sh"
   config.vm.provision "shell", name: "[SCRIPT BACKSTAGE.SH]", privileged: false, path: "../scripts/backstage.sh"  
+  config.vm.provision "shell", name: "[SCRIPT BACKSTAGE.SH]", privileged: false, path: "../scripts/sync-backstage.sh"  
 end
 
