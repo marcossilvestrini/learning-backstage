@@ -57,17 +57,17 @@ yarn install
 sudo chown -R  vagrant:vagrant /opt/backstage/
 
 # Set app-config.yaml
-cp "$WORKDIR/backstage/app-config.yaml"  /opt/backstage/skynet
-SECRETS_FILE="$WORKDIR/security/backstage-secrets.yaml"
-CONFIG_FILE="/opt/backstage/skynet/app-config.yaml"
-GITHUB_TOKEN=$(grep 'GITHUB_TOKEN' "$SECRETS_FILE" | awk '{print $2}')
-GITHUB_CLIENT_ID=$(grep 'GITHUB_CLIENT_ID' "$SECRETS_FILE" | awk '{print $2}')
-GITHUB_CLIENT_SECRET=$(grep 'GITHUB_CLIENT_SECRET' "$SECRETS_FILE" | awk '{print $2}')
-sed -i "s/\${AUTH_GITHUB_CLIENT_ID}/$GITHUB_CLIENT_ID/g" "$CONFIG_FILE"
-sed -i "s/\${AUTH_GITHUB_CLIENT_SECRET}/$GITHUB_CLIENT_SECRET/g" "$CONFIG_FILE"
+# cp "$WORKDIR/backstage/app-config.yaml"  /opt/backstage/skynet
+# SECRETS_FILE="$WORKDIR/security/backstage-secrets.yaml"
+# CONFIG_FILE="/opt/backstage/skynet/app-config.yaml"
+# GITHUB_TOKEN=$(grep 'GITHUB_TOKEN' "$SECRETS_FILE" | awk '{print $2}')
+# GITHUB_CLIENT_ID=$(grep 'GITHUB_CLIENT_ID' "$SECRETS_FILE" | awk '{print $2}')
+# GITHUB_CLIENT_SECRET=$(grep 'GITHUB_CLIENT_SECRET' "$SECRETS_FILE" | awk '{print $2}')
+# sed -i "s/\${AUTH_GITHUB_CLIENT_ID}/$GITHUB_CLIENT_ID/g" "$CONFIG_FILE"
+# sed -i "s/\${AUTH_GITHUB_CLIENT_SECRET}/$GITHUB_CLIENT_SECRET/g" "$CONFIG_FILE"
 
-# Set packages/app/src/App.tsx
-cp "$WORKDIR/backstage/App.tsx" /opt/backstage/skynet/packages/app/src/App.tsx
+# # Set packages/app/src/App.tsx
+# cp "$WORKDIR/backstage/App.tsx" /opt/backstage/skynet/packages/app/src/App.tsx
 
 # Start app
 yarn dev
