@@ -53,6 +53,7 @@ cp -r backstage/skynet /opt/backstage
 cd /opt/backstage/skynet || exit     
 yarn install
 sudo chown -R  vagrant:vagrant /opt/backstage/
+rsync -av --exclude=node_modules --exclude=dist-types --exclude=.git /opt/backstage/skynet/ /home/vagrant/backstage/skynet/
 
 # Start app
-yarn dev
+source .env && yarn dev

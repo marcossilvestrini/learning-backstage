@@ -28,17 +28,24 @@ else
   fi
 fi
 
-# First sync files
-if [ ! -d "$WORKDIR/backstage/skynet" ]; then
-  mkdir -p "$WORKDIR/backstage/skynet"
-fi
-rsync -av --exclude=node_modules --exclude=dist-types --exclude=.git /opt/backstage/skynet/ /home/vagrant/backstage/skynet/
+# Set syn script
 
-# Check if the cron job already exists
-if ! crontab -l | grep -q 'rsync'; then
-  # If it doesn't exist, add the new cron job
-  (crontab -l ; echo '* * * * * rsync -av --exclude=node_modules --exclude=dist-types --exclude=.git /opt/backstage/skynet/ /home/vagrant/backstage/skynet/') | crontab -
-  echo "Cron job added successfully."
-else
-  echo "The cron job already exists."
+if [ ! -f "/bin/bash /usr/local/bin/sync_script.sh" ]; then
+  sudo cp scripts/sync_script.sh /usr/local/bin
+  sudo chown vagrant:vagrant /usr/local/bin/sync_script.sh
+  chmod +x /usr/local/bin/sync_script.sh    
 fi
+
+# First sync files
+rsync -av --exclude=node_modules --exclude=dist-types --exclude=.git /home/vagrant/backstage/skynet/ /opt/backstage/skynet/
+#rsync -av --exclude=node_modules --exclude=dist-types --exclude=.git /opt/backstage/skynet/ /home/vagrant/backstage/skynet/
+
+# Verifique se a tarefa cron já existe.
+if crontab -l | grep -q "/usr/local/bin/sync_script.sh"; then
+  echo "A tarefa cron já existe."
+else
+  # Crie a tarefa cron para executar rsync a cada 10 segundos.
+  (crontab -l ; echo "* * * * * /bin/bash /usr/local/bin/sync_script.sh") | crontab -
+  echo "Tarefa cron criada."
+fi
+
