@@ -1,0 +1,28 @@
+- name: Install nginx-mod-stream
+  dnf:
+    name: nginx-mod-stream
+    state: present
+
+- name: Install nginx
+  dnf:
+    name: nginx
+    state: present
+
+- name: Set Nginx configuration file
+  template:
+    src: backstage.conf.j2
+    dest: /etc/nginx/conf.d/backstage.conf
+    mode: '0644'
+
+- name: Check Nginx configuration
+  command: nginx -t
+
+- name: Enable Nginx service
+  systemd:
+    name: nginx
+    enabled: yes
+
+- name: Restart Nginx service
+  systemd:
+    name: nginx
+    state: restarted

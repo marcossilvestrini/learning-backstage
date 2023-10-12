@@ -39,9 +39,12 @@ Vagrant.configure("2") do |config|
 #  config.hostsupdater.aliases = ["backstage"]
   config.vm.provision "ansible_local" do |ansible|    
     ansible.install_mode = "pip3"
-    ansible.provisioning_path="/home/vagrant/ansible"
-    ansible.playbook = "playbook.yaml"
+    ansible.compatibility_mode = "2.0"
+    #ansible.version = "2.15"
+    ansible.provisioning_path="/home/vagrant/ansible"    
     ansible.inventory_path = "hosts"
+    ansible.playbook = "playbook.yaml"
+    ansible.limit = "all"    
 
     # Se você precisar passar variáveis para o playbook, descomente e ajuste o seguinte bloco
     #ansible.extra_vars = {

@@ -1,0 +1,7 @@
+- name: Playbook for configure backstage host
+  hosts: backstage
+  become: yes
+
+  roles:
+    - cloud-init 
+    - nginx
