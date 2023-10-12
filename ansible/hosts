@@ -1,6 +1,7 @@
-all:
-  hosts:
-    localhost:
-      ansible_connection: local
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+[backstage]
+localhost
+
+[backstage:vars]
+ansible_user=vagrant
+ansible_python_interpreter=/usr/bin/python3
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
