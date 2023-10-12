@@ -37,14 +37,14 @@
       when: "'root' in lookup('password', secrets, errors='strict')"
 
     - name: Download and install EPEL repository
-        command: dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
-    
+      command: dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
+
     - name: Install Commons Packages
       dnf:
         name: '{{ item }}'
         state: latest
       loop:
-        - '{{ packages }}'      
+        - '{{ packages }}'
 
     - name: Set /etc/profile
       copy:
@@ -58,7 +58,7 @@
         dest: /home/vagrant
         owner: '{{ user_backstage }}'
         group: '{{ user_backstage }}'
-        mode: '0644'       
+        mode: '0644'
 
     - name: Set /home/vagrant/.bashrc
       copy:
@@ -66,23 +66,23 @@
         dest: /home/vagrant/.bashrc
         owner: '{{ user_backstage }}'
         group: '{{ user_backstage }}'
-        mode: '0644'  
+        mode: '0644'
 
     - name: Set /root/.bashrc
       copy:
         src: .bashrc-ol9
-        dest: /root/.bashrc        
-        mode: '0644'  
+        dest: /root/.bashrc
+        mode: '0644'
 
     - name: Enabling IP forwarding on Linux [/etc/sysctl.conf]
       copy:
         src: sysctl.conf
         dest: /etc
-        mode: '0644'  
+        mode: '0644'
 
-    - name: Reload systemd manager configuration      
+    - name: Reload systemd manager configuration
       command: systemctl daemon-reload
- 
+
     - name: Check if /etc/ssh/sshd_config.d/50-redhat.conf exists
       stat:
         path: /etc/ssh/sshd_config.d/50-redhat.conf
@@ -95,7 +95,7 @@
         state: absent
       when: sshd_config_check.stat.exists | bool
 
-    - name: Copy 01-sshd-custom.conf to /etc/ssh/sshd_config.d/      
+    - name: Copy 01-sshd-custom.conf to /etc/ssh/sshd_config.d/
       copy:
         src: 01-sshd-custom.conf
         dest: /etc/ssh/sshd_config.d/01-sshd-custom.conf
@@ -154,12 +154,12 @@
           - xorg-x11-utils.x86_64
 
     - name: Copy sysstat configuration file
-          copy:
-            src: sysstat
-            dest: /etc/default/sysstat
-            owner: root
-            group: root
-            mode: '0644'
+      copy:
+        src: sysstat
+        dest: /etc/default/sysstat
+        owner: root
+        group: root
+        mode: '0644'
 
     - name: Start sysstat services
       systemd:
@@ -172,10 +172,10 @@
         - sysstat-summary.timer
 
     - name: Copy hosts file to /etc
-          copy:
-            src: configs/hosts
-            dest: /etc/hosts
-            mode: '0644'
+      copy:
+        src: configs/hosts
+        dest: /etc/hosts
+        mode: '0644'
 
     - name: Set hostname to backstage.skynet.com.br
       command: hostnamectl set-hostname backstage.skynet.com.br
@@ -200,8 +200,8 @@
         enabled: yes
       become: yes
 
-    handlers:
-      - name: Reload NetworkManager
-        systemd:
-          name: NetworkManager
-          state: reloaded
+  handlers:
+    - name: Reload NetworkManager
+      systemd:
+        name: NetworkManager
+        state: reloaded

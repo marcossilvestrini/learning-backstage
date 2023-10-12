@@ -38,8 +38,8 @@ Vagrant.configure("2") do |config|
   # Configure o provisionamento com Ansible
 #  config.hostsupdater.aliases = ["backstage"]
   config.vm.provision "ansible_local" do |ansible|    
-    ansible.install_mode = "pip"
-    ansible.provisioning_path="ansible"
+    ansible.install_mode = "pip3"
+    ansible.provisioning_path="/home/vagrant/ansible"
     ansible.playbook = "playbook.yaml"
     ansible.inventory_path = "hosts"
 
