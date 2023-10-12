@@ -1,10 +1,10 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-unless Vagrant.has_plugin?("vagrant-hostsupdater")
-  puts 'Installing vagrant-hostsupdater Plugin...'
-  system('vagrant plugin install vagrant-hostsupdater')
-end
+# unless Vagrant.has_plugin?("vagrant-hostsupdater")
+#   puts 'Installing vagrant-hostsupdater Plugin...'
+#   system('vagrant plugin install vagrant-hostsupdater')
+# end
 
 Vagrant.configure("2") do |config|  
   config.vm.box = "silvestrini-ol9"
@@ -36,8 +36,8 @@ Vagrant.configure("2") do |config|
   # config.vm.provision "shell", name: "[SCRIPT SYNC-BACKSTAGE.SH]", privileged: false, path: "../scripts/sync-backstage.sh"
   
   # Configure o provisionamento com Ansible
-  config.hostsupdater.aliases = ["backstage"]
-  config.vm.provision "ansible.local" do |ansible|
+#  config.hostsupdater.aliases = ["backstage"]
+  config.vm.provision "ansible_local" do |ansible|    
     ansible.limit = "all"
     ansible.install_mode = "pip"
     ansible.playbook = "ansible/playbook.yml"
@@ -48,5 +48,6 @@ Vagrant.configure("2") do |config|
     #  var_name: "var_value"
     #}
   end
+  
 end
 
