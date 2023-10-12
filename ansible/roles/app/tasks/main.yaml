@@ -1,0 +1,69 @@
+- name: Find and run dos2unix
+  find:
+    paths: '{{ app_dir }}'
+    patterns: "*.*"  # Adjust this pattern to match the files you want to convert
+  register: found_files
+
+- name: Execute dos2unix on found files
+  command: dos2unix "{{ item.path }}"
+  with_items: "{{ found_files.files }}"
+
+- name: Create directory if it doesn't exist
+  command: test -d '{{ app_dir }}'
+  become: true  
+  ignore_errors: true
+  register: directory_check
+
+- name: Create '{{ app_dir }}' directory
+  command: mkdir -p '{{ app_dir }}'
+  become: true  
+  when: directory_check.rc != 0
+
+- name: Set permissions on /opt/backstage
+  command: chown -R vagrant:vagrant /opt/backstage
+  become: true
+  
+- name: Check if source directory exists
+  stat:
+    path: "/home/vagrant/backstage/skynet"
+  register: source_directory
+
+- name: Copy skynet to /opt/backstage
+  command: cp -r /home/vagrant/backstage/skynet /opt/backstage
+  become_user: '{{ user_backstage }}'
+  when: source_directory.stat.exists
+
+- name: Install dependencies with Yarn
+  command: yarn install
+  args:
+    chdir: '{{ app_dir }}'
+  become_user: '{{ user_backstage }}'
+
+- name: Set permissions on /opt/backstage
+  command: chown -R vagrant:vagrant /opt/backstage
+  become: true  
+
+- name: Synchronize files to /home/vagrant/backstage/skynet
+  synchronize:
+    src: '{{ app_dir }}'
+    dest: /home/vagrant/backstage
+    rsync_opts:
+      - --exclude=node_modules
+      - --exclude=dist-types
+      - --exclude=.git  
+  become_user: '{{ user_backstage }}'
+
+- name: Start the application
+  shell: |
+    sudo pkill node
+    dos2unix  '{{ app_dir }}'/.env
+    source '{{ app_dir }}'/.env
+    cd '{{ app_dir }}'
+    #yarn dev > /dev/null 2>&1 &   
+    yarn dev
+  args:
+    chdir: '{{ app_dir }}'
+  become_user: '{{ user_backstage }}'
+  register: app_start_output
+
+

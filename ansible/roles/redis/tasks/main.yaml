@@ -1,0 +1,13 @@
+- name: Install Redis package
+  package:
+    name: redis
+    state: present
+
+- name: Start Redis and enable it on boot
+  systemd:
+    name: redis
+    enabled: yes
+    state: started
+
+- name: Set Redis password for default user to "backstage"
+  command: redis-cli CONFIG SET requirepass '{{ redis_password }}'

@@ -1,0 +1,35 @@
+- name: Add Docker repository
+  become: true  
+  command: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+- name: Install Docker
+  become: true  
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+
+- name: Start Docker service
+  become: true  
+  service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Add user ''{{ user_backstage }}'' to the 'docker' group
+  become: true  
+  user:
+    name: '{{ user_backstage }}'
+    groups: docker
+    append: true
+
+- name: Set permissions on Docker socket
+  become: true
+  file:
+    path: /var/run/docker.sock
+    owner: vagrant
+    group: docker
+    mode: '0660'

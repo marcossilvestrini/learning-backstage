@@ -3,35 +3,17 @@
     name: "postgresql-server,postgresql-contrib,postgresql"
     state: present
 
-- name: Check if PostgreSQL is already initialized
-  shell: systemctl is-active postgresql
-  register: postgresql_status
-  changed_when: false
-
-- name: Initialize the PostgreSQL database and enable it to start on boot
-  become_user: postgres
-  command: postgresql-setup --initdb
-  ignore_errors: true
-  when: postgresql_status.stdout != "active"
-
-- name: Find PostgreSQL pg_hba.conf file
-  shell: "find / -name pg_hba.conf 2>/dev/null | head -n 1 || true"
-  register: pg_hba_conf
-  changed_when: false
-
 - name: Configure PostgreSQL to use "md5" authentication for "postgres" user
-  lineinfile:
-    path: "{{ pg_hba_conf.stdout }}"
-    regexp: '^local\s+all\s+all\s+peer'
-    line: '#local   all             all                                     peer'
-  when: pg_hba_conf.stdout is defined
+  template:
+    src: pg_hba.conf.j2
+    dest: /var/lib/pgsql/data/pg_hba.conf
+    remote_src: true
 
-- name: Uncomment PostgreSQL authentication for "postgres" user
-  lineinfile:
-    path: "{{ pg_hba_conf.stdout }}"
-    regexp: '^#local\s+all\s+postgres\s+md5'
-    line: 'local   all             postgres                                md5'
-  when: pg_hba_conf.stdout is defined
+- name: Allow PostgreSQL database server to listen on all network interfaces
+  template:
+    src: postgresql.conf.j2
+    dest: /var/lib/pgsql/data/postgresql.conf
+    remote_src: true
 
 - name: Enable PostgreSQL to start on boot
   systemd:
@@ -42,9 +24,20 @@
   systemd:
     name: postgresql
     state: restarted
+
+- name: Check if PostgreSQL is already initialized
+  shell: systemctl is-active postgresql
+  register: postgresql_status
+  changed_when: false
+  ignore_errors: true
+
+- name: Initialize the PostgreSQL database and enable it to start on boot
+  become_user: postgres
+  command: postgresql-setup --initdb
+  ignore_errors: true
+  when: postgresql_status.stdout != "active"
   
 - name: Update the password for the postgres user
   shell: "sudo -u postgres psql -c \"ALTER USER postgres PASSWORD '{{ postgres_password }}'\""
+  
   ignore_errors: true
-
-

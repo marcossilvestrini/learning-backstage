@@ -4,4 +4,4 @@
 
   roles:
     - postgresql
-    #- redis
+    - redis

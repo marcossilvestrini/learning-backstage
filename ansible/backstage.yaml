@@ -1,0 +1,8 @@
+- name: Playbook for configure Backstage
+  hosts: backstage
+  #become: true
+
+  roles:
+    # - node
+    # - docker
+    - app
