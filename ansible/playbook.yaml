@@ -1,0 +1,7 @@
+---
+- name: Playbook for configure backstage host
+  hosts: localhost
+  become: yes
+
+  roles:
+    - cloud-init  # Nome da role que você deseja importar

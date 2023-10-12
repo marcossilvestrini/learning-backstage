@@ -56,4 +56,5 @@ sudo chown -R  vagrant:vagrant /opt/backstage/
 rsync -av --exclude=node_modules --exclude=dist-types --exclude=.git /opt/backstage/skynet/ /home/vagrant/backstage/skynet/
 
 # Start app
-source .env && yarn dev
+#source .env && yarn dev
+nohup source .env && yarn dev > /dev/null 2>&1 &

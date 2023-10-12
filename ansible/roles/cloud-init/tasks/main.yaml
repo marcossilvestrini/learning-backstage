@@ -1,0 +1,207 @@
+- name: Set passwords for vagrant and root users
+  hosts: localhost  # Replace with your target hosts or groups
+  become: yes
+  tasks:
+    - name: Find and run dos2unix
+      find:
+        paths: /home/vagrant
+        patterns: "*.*"  # Adjust this pattern to match the files you want to convert
+      register: found_files
+
+    - name: Execute dos2unix on found files
+      command: dos2unix "{{ item.path }}"
+      with_items: "{{ found_files.files }}"
+
+    - name: Change permissions of .sh files
+      find:
+        paths: /home/vagrant
+        patterns: "*.sh"
+      register: sh_files
+
+    - name: Set execute permission on .sh files
+      file:
+        path: "{{ item.path }}"
+        mode: 'u+x'
+      loop: "{{ sh_files.files }}"
+
+    - name: Set password for vagrant user
+      user:
+        name: '{{ user_backstage }}'
+        password: "vagrant"  # Replace with your encrypted password
+      when: "'vagrant' in lookup('password', secrets, errors='strict')"
+
+    - name: Set password for root user
+      user:
+        name: root
+        password: "vagrant"  # Replace with your encrypted password
+      when: "'root' in lookup('password', secrets, errors='strict')"
+
+    - name: Download and install EPEL repository
+        command: dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
+    
+    - name: Install Commons Packages
+      dnf:
+        name: '{{ item }}'
+        state: latest
+      loop:
+        - '{{ packages }}'      
+
+    - name: Set /etc/profile
+      copy:
+        src: profile-ol9
+        dest: /etc/profile
+        mode: '0644'
+
+    - name: Set /home/vagrant/.vimrc
+      copy:
+        src: .vimrc
+        dest: /home/vagrant
+        owner: '{{ user_backstage }}'
+        group: '{{ user_backstage }}'
+        mode: '0644'       
+
+    - name: Set /home/vagrant/.bashrc
+      copy:
+        src: .bashrc-ol9
+        dest: /home/vagrant/.bashrc
+        owner: '{{ user_backstage }}'
+        group: '{{ user_backstage }}'
+        mode: '0644'  
+
+    - name: Set /root/.bashrc
+      copy:
+        src: .bashrc-ol9
+        dest: /root/.bashrc        
+        mode: '0644'  
+
+    - name: Enabling IP forwarding on Linux [/etc/sysctl.conf]
+      copy:
+        src: sysctl.conf
+        dest: /etc
+        mode: '0644'  
+
+    - name: Reload systemd manager configuration      
+      command: systemctl daemon-reload
+ 
+    - name: Check if /etc/ssh/sshd_config.d/50-redhat.conf exists
+      stat:
+        path: /etc/ssh/sshd_config.d/50-redhat.conf
+      register: sshd_config_check
+      ignore_errors: yes
+
+    - name: Remove /etc/ssh/sshd_config.d/50-redhat.conf if it exists
+      file:
+        path: /etc/ssh/sshd_config.d/50-redhat.conf
+        state: absent
+      when: sshd_config_check.stat.exists | bool
+
+    - name: Copy 01-sshd-custom.conf to /etc/ssh/sshd_config.d/      
+      copy:
+        src: 01-sshd-custom.conf
+        dest: /etc/ssh/sshd_config.d/01-sshd-custom.conf
+        mode: '0644'
+
+    - name: Set permissions on 01-sshd-custom.conf
+      file:
+        path: /etc/ssh/sshd_config.d/01-sshd-custom.conf
+        mode: '0644'
+
+    - name: Restart SSH service
+      service:
+        name: sshd
+        state: restarted
+
+    - name: Stop and disable firewalld service
+      service:
+        name: firewalld
+        state: stopped
+        enabled: no
+
+    - name: Set SELinux to Permissive mode
+      selinux:
+        policy: targeted
+        state: permissive
+
+    - name: Check if public key exists
+      command: grep -q "{{ public_key }}" /home/vagrant/.ssh/authorized_keys
+      register: key_check
+      failed_when: false
+      changed_when: false
+
+    - name: Add public key to authorized_keys
+      lineinfile:
+        path: /home/vagrant/.ssh/authorized_keys
+        line: "{{ public_key }}"
+      when: key_check.rc != 0
+
+    - name: Set ol9_codeready_builder repository to enabled
+      command: dnf config-manager --set-enabled ol9_codeready_builder
+      ignore_errors: yes  # Use ignore_errors to continue even if the repository is already enabled
+
+    - name: Update package cache
+      dnf:
+        name: '*'
+        state: latest
+      become: yes
+
+    - name: Install X11 packages
+      command: "dnf install -y {{ x11_packages | join(' ') }}"
+      vars:
+        x11_packages:
+          - xorg-x11-server-Xorg.x86_64
+          - xorg-x11-xauth.x86_64
+          - xorg-x11-server-utils.x86_64
+          - xorg-x11-utils.x86_64
+
+    - name: Copy sysstat configuration file
+          copy:
+            src: sysstat
+            dest: /etc/default/sysstat
+            owner: root
+            group: root
+            mode: '0644'
+
+    - name: Start sysstat services
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop:
+        - sysstat
+        - sysstat-collect.timer
+        - sysstat-summary.timer
+
+    - name: Copy hosts file to /etc
+          copy:
+            src: configs/hosts
+            dest: /etc/hosts
+            mode: '0644'
+
+    - name: Set hostname to backstage.skynet.com.br
+      command: hostnamectl set-hostname backstage.skynet.com.br
+
+    - name: Copy NetworkManager custom configuration file
+      copy:
+        src: 01-NetworkManager-custom.conf  # Adjust the source path to your local file
+        dest: /etc/NetworkManager/conf.d/
+        mode: '0644'
+      notify:
+        - Reload NetworkManager
+
+    - name: Start iscsid service
+      systemd:
+        name: iscsid
+        state: started
+      become: yes
+
+    - name: Enable iscsid service at boot
+      systemd:
+        name: iscsid
+        enabled: yes
+      become: yes
+
+    handlers:
+      - name: Reload NetworkManager
+        systemd:
+          name: NetworkManager
+          state: reloaded

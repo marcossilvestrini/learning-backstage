@@ -1,0 +1,4 @@
+127.0.0.1   localhost localhost.skynet.com.br localhost4 localhost4.skynet.com.br
+::1         localhost localhost.skynet.com.br localhost6 localhost6.skynet.com.br
+192.168.0.150   backstage.skynet.com.br
+

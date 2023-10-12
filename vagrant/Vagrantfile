@@ -21,10 +21,25 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder "../scripts", "/home/vagrant/scripts"
   config.vm.synced_folder "../security", "/home/vagrant/security"  
   config.vm.synced_folder "../backstage", "/home/vagrant/backstage"      
-  config.vm.provision "shell", name: "[SCRIPT CLOUD-INIT.SH]", path: "../scripts/cloud-init.sh"
-  config.vm.provision "shell", name: "[SCRIPT NGINX.SH]", path: "../scripts/nginx.sh"
-  config.vm.provision "shell", name: "[SCRIPT POSTGRESQL.SH]", privileged: true, path: "../scripts/postgresql.sh"
-  config.vm.provision "shell", name: "[SCRIPT BACKSTAGE.SH]", privileged: false, path: "../scripts/backstage.sh"  
-  config.vm.provision "shell", name: "[SCRIPT SYNC-BACKSTAGE.SH]", privileged: false, path: "../scripts/sync-backstage.sh"  
+  config.vm.synced_folder "../ansible", "/home/vagrant/ansible"        
+  # config.vm.provision "shell", name: "[SCRIPT CLOUD-INIT.SH]", path: "../scripts/cloud-init.sh"
+  # config.vm.provision "shell", name: "[SCRIPT NGINX.SH]", path: "../scripts/nginx.sh"
+  # config.vm.provision "shell", name: "[SCRIPT POSTGRESQL.SH]", path: "../scripts/postgresql.sh"
+  # config.vm.provision "shell", name: "[SCRIPT REDIS.SH]", path: "../scripts/redis.sh"
+  # config.vm.provision "shell", name: "[SCRIPT BACKSTAGE.SH]", privileged: false, path: "../scripts/backstage.sh"
+  # config.vm.provision "shell", name: "[SCRIPT SYNC-BACKSTAGE.SH]", privileged: false, path: "../scripts/sync-backstage.sh"
+  
+  # Configure o provisionamento com Ansible
+  config.vm.provision "ansible.local" do |ansible|
+    ansible.limit = "all"
+    ansible.install_mode = "pip"
+    ansible.playbook = "ansible/playbook.yml"
+    ansible.inventory_path = "ansible/hosts"
+
+    # Se você precisar passar variáveis para o playbook, descomente e ajuste o seguinte bloco
+    #ansible.extra_vars = {
+    #  var_name: "var_value"
+    #}
+  end
 end
 
