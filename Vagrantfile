@@ -38,16 +38,16 @@ Vagrant.configure("2") do |config|
   # Configure o provisionamento com Ansible
 #  config.hostsupdater.aliases = ["backstage"]
   config.vm.provision "ansible_local" do |ansible|    
-    ansible.limit = "all"
     ansible.install_mode = "pip"
-    ansible.playbook = "ansible/playbook.yml"
-    ansible.inventory_path = "ansible/hosts"
+    ansible.provisioning_path="ansible"
+    ansible.playbook = "playbook.yaml"
+    ansible.inventory_path = "hosts"
 
     # Se você precisar passar variáveis para o playbook, descomente e ajuste o seguinte bloco
     #ansible.extra_vars = {
     #  var_name: "var_value"
     #}
   end
-  
+
 end
 
