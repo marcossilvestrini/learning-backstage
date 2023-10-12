@@ -1,5 +1,11 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+
+unless Vagrant.has_plugin?("vagrant-hostsupdater")
+  puts 'Installing vagrant-hostsupdater Plugin...'
+  system('vagrant plugin install vagrant-hostsupdater')
+end
+
 Vagrant.configure("2") do |config|  
   config.vm.box = "silvestrini-ol9"
   config.vm.box_download_insecure=true   
@@ -17,11 +23,11 @@ Vagrant.configure("2") do |config|
     vb.cpus = 3
   end
   config.vm.synced_folder ".", "/vagrant", disabled: true
-  config.vm.synced_folder "../configs/", "/home/vagrant/configs"  
-  config.vm.synced_folder "../scripts", "/home/vagrant/scripts"
-  config.vm.synced_folder "../security", "/home/vagrant/security"  
-  config.vm.synced_folder "../backstage", "/home/vagrant/backstage"      
-  config.vm.synced_folder "../ansible", "/home/vagrant/ansible"        
+  config.vm.synced_folder "configs/", "/home/vagrant/configs"  
+  config.vm.synced_folder "scripts", "/home/vagrant/scripts"
+  config.vm.synced_folder "security", "/home/vagrant/security"  
+  config.vm.synced_folder "backstage", "/home/vagrant/backstage"      
+  config.vm.synced_folder "ansible", "/home/vagrant/ansible"        
   # config.vm.provision "shell", name: "[SCRIPT CLOUD-INIT.SH]", path: "../scripts/cloud-init.sh"
   # config.vm.provision "shell", name: "[SCRIPT NGINX.SH]", path: "../scripts/nginx.sh"
   # config.vm.provision "shell", name: "[SCRIPT POSTGRESQL.SH]", path: "../scripts/postgresql.sh"
@@ -30,6 +36,7 @@ Vagrant.configure("2") do |config|
   # config.vm.provision "shell", name: "[SCRIPT SYNC-BACKSTAGE.SH]", privileged: false, path: "../scripts/sync-backstage.sh"
   
   # Configure o provisionamento com Ansible
+  config.hostsupdater.aliases = ["backstage"]
   config.vm.provision "ansible.local" do |ansible|
     ansible.limit = "all"
     ansible.install_mode = "pip"
