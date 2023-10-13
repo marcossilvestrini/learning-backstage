@@ -1,11 +1,11 @@
 app:
-  title: Scaffolded Backstage App
+  title: Backstage Skynet
   baseUrl: http://0.0.0.0:3000  
     #port: 3000
     #host: 192.168.0.150
 
 organization:
-  name: Skynet
+  name: Skynet Portal
 
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins
@@ -18,7 +18,7 @@ backend:
   listen:
     port: 7007
     # Uncomment the following host directive to bind to specific interfaces
-    host: 0.0.0.0
+    # host: 0.0.0.0
   csp:
     connect-src: ["'self'", 'http:', 'https:']
     # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
@@ -37,8 +37,7 @@ backend:
         host: ${POSTGRES_HOST}
         port: ${POSTGRES_PORT}
         user: ${POSTGRES_USER}
-        password: ${POSTGRES_PASSWORD}
-        pluginDivisionMode: schema
+        password: ${POSTGRES_PASSWORD}        
     plugin:
         catalog:
           connection:
@@ -52,6 +51,9 @@ backend:
         scaffolder:
           connection:
             database: backstage_db
+cache:
+  store: redis
+  connection: 'redis://${REDIS_USER}:${REDIS_PASSWD}@localhost:6379'            
 
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 

@@ -36,8 +36,42 @@
   command: postgresql-setup --initdb
   ignore_errors: true
   when: postgresql_status.stdout != "active"
-  
-- name: Update the password for the postgres user
-  shell: "sudo -u postgres psql -c \"ALTER USER postgres PASSWORD '{{ postgres_password }}'\""
-  
+
+#----------------------------------------------------------------
+
+- name: Create user in PostgreSQL
+  postgresql_user:
+    name: '{{ postgres_user }}'
+    password: '{{ postgres_password }}'
+    priv: superuser
+
+- name: Set PostgreSQL user's password
+  postgresql_user:
+    name: '{{ postgres_user }}'
+    password: '{{ postgres_password }}'
+
+- name: Grant superuser privileges to the user
+  postgresql_privs:
+    privs: SUPERUSER
+    roles: '{{ postgres_user }}'
+
+- name: Test login to the template1 database
+  command: psql -U '{{ postgres_user }}' -d template1 -c "SELECT current_user;"
+  environment:
+    PGPASSWORD: '{{ postgres_password }}'
   ignore_errors: true
+  register: login_result
+
+- name: Display login result
+  debug:
+    var: login_result.stdout_lines
+
+- name: Log successful login
+  debug:
+    msg: "Login successful!"
+  when: "'Login OK' in login_result.stdout"
+
+
+# - name: Update the password for the postgres user
+#   shell: "sudo -u postgres psql -c \"ALTER USER postgres PASSWORD '{{ postgres_password }}'\""  
+#   ignore_errors: true
