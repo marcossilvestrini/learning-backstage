@@ -3,17 +3,77 @@
     name: "postgresql-server,postgresql-contrib,postgresql"
     state: present
 
-- name: Configure PostgreSQL to use "md5" authentication for "postgres" user
+- name: Check if /var/lib/pgsql/data directory exists
+  become_user: postgres
+  stat:
+    path: /var/lib/pgsql/data
+  register: data_directory
+
+- name: Remove /var/lib/pgsql/data directory if it exists
+  become_user: postgres
+  file:
+    path: /var/lib/pgsql/data
+    state: absent
+  when: data_directory.stat.exists
+
+- name: Check if PostgreSQL is already initialized
+  shell: systemctl is-active postgresql
+  register: postgresql_status
+  changed_when: false
+  ignore_errors: true
+
+- name: Create a temporary configuration file for PostgreSQL setup  
+  template:
+    src: responses.conf.j2
+    dest: /tmp/responses    
+    owner: postgres
+    group: postgres    
+    remote_src: true     
+
+- name: Check if pexpect and psycopg2 are installed
+  become: yes
+  become_user: postgres
+  pip:
+    name: pexpect,psycopg2
+    state: absent
+  register: check_packages
+  ignore_errors: yes
+
+- name: Install pexpect and psycopg2 Python modules
+  become: yes
+  become_user: postgres
+  pip:
+    name:
+      - pexpect
+      - psycopg2
+    state: present
+  when: check_packages.failed
+
+
+- name: Initialize the PostgreSQL database
+  become_user: postgres
+  expect:
+    command: "/usr/bin/postgresql-setup --initdb < /tmp/responses"
+    responses:
+      "Name:": "postgres"
+      "User:": "postgres"
+      "Password:": '{{ postgres_password }}'
+
+- name: Configure PostgreSQL to use "md5" authentication for "postgres" user  
   template:
     src: pg_hba.conf.j2
     dest: /var/lib/pgsql/data/pg_hba.conf
-    remote_src: true
+    owner: postgres
+    group: postgres
+    remote_src: true  
 
-- name: Allow PostgreSQL database server to listen on all network interfaces
+- name: Allow PostgreSQL database server to listen on all network interfaces  
   template:
     src: postgresql.conf.j2
     dest: /var/lib/pgsql/data/postgresql.conf
-    remote_src: true
+    owner: postgres
+    group: postgres
+    remote_src: true  
 
 - name: Enable PostgreSQL to start on boot
   systemd:
@@ -25,37 +85,26 @@
     name: postgresql
     state: restarted
 
-- name: Check if PostgreSQL is already initialized
-  shell: systemctl is-active postgresql
-  register: postgresql_status
-  changed_when: false
-  ignore_errors: true
-
-- name: Initialize the PostgreSQL database and enable it to start on boot
-  become_user: postgres
-  command: postgresql-setup --initdb
-  ignore_errors: true
-  when: postgresql_status.stdout != "active"
-
-#----------------------------------------------------------------
-
 - name: Create user in PostgreSQL
+  become_user: postgres
   postgresql_user:
     name: '{{ postgres_user }}'
     password: '{{ postgres_password }}'
-    priv: superuser
-
-- name: Set PostgreSQL user's password
-  postgresql_user:
-    name: '{{ postgres_user }}'
-    password: '{{ postgres_password }}'
-
+  
+# - name: Set PostgreSQL user's password
+#   become_user: postgres
+#   postgresql_user:
+#     name: '{{ postgres_user }}'
+#     password: '{{ postgres_password }}'
+  
 - name: Grant superuser privileges to the user
+  become_user: postgres
   postgresql_privs:
     privs: SUPERUSER
     roles: '{{ postgres_user }}'
-
+  
 - name: Test login to the template1 database
+  become_user: postgres
   command: psql -U '{{ postgres_user }}' -d template1 -c "SELECT current_user;"
   environment:
     PGPASSWORD: '{{ postgres_password }}'
@@ -71,7 +120,6 @@
     msg: "Login successful!"
   when: "'Login OK' in login_result.stdout"
 
-
-# - name: Update the password for the postgres user
-#   shell: "sudo -u postgres psql -c \"ALTER USER postgres PASSWORD '{{ postgres_password }}'\""  
-#   ignore_errors: true
+- name: Update the password for the postgres user
+  shell: "sudo -u postgres psql -c \"ALTER USER postgres PASSWORD '{{ postgres_password }}'\""  
+  ignore_errors: true
