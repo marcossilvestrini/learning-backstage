@@ -55,8 +55,7 @@
 
 - name: Start the application
   shell: |
-    sudo pkill node
-    dos2unix  '{{ app_dir }}'/.env
+    sudo pkill node    
     source '{{ app_dir }}'/.env
     cd '{{ app_dir }}'
     #yarn dev > /dev/null 2>&1 &   
