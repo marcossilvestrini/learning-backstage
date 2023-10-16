@@ -1,4 +1,4 @@
-- name: Playbook for configure Postgresql and Redis for backstage host
+- name: Playbook for install and configure Postgresql and Redis for backstage host
   hosts: backstage
   become: true
 
