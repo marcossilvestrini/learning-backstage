@@ -1,84 +1,85 @@
-- name: Create directory if it doesn't exist
-  command: test -d '{{ app_dir }}'
-  become: true  
-  ignore_errors: true
-  register: directory_check
+# - name: Create directory if it doesn't exist
+#   command: test -d '{{ app_dir }}'
+#   become: true  
+#   ignore_errors: true
+#   register: directory_check
 
-- name: Create '{{ app_dir }}' directory
-  command: mkdir -p '{{ app_dir }}'
-  become: true  
-  when: directory_check.rc != 0
+# - name: Create '{{ app_dir }}' directory
+#   command: mkdir -p '{{ app_dir }}'
+#   become: true  
+#   when: directory_check.rc != 0
 
-- name: Set permissions on /opt/backstage
-  command: chown -R vagrant:vagrant /opt/backstage
-  become: true
+# - name: Set permissions on /opt/backstage
+#   command: chown -R vagrant:vagrant /opt/backstage
+#   become: true
   
-- name: Check if source directory exists
-  stat:
-    path: "/home/vagrant/backstage/skynet"
-  register: source_directory
+# - name: Check if source directory exists
+#   stat:
+#     path: "/home/vagrant/backstage/skynet"
+#   register: source_directory
 
-- name: Copy skynet to /opt/backstage
-  command: cp -r /home/vagrant/backstage/skynet /opt/backstage
-  become_user: '{{ user_backstage }}'
-  when: source_directory.stat.exists
+# - name: Copy skynet to /opt/backstage
+#   command: cp -r /home/vagrant/backstage/skynet /opt/backstage
+#   become_user: '{{ user_backstage }}'
+#   when: source_directory.stat.exists
 
-- name: Find and run dos2unix
-  find:
-    paths: '{{ app_dir }}'
-    patterns: "*.*"  # Adjust this pattern to match the files you want to convert
-  register: found_files
+# - name: Find and run dos2unix
+#   find:
+#     paths: '{{ app_dir }}'
+#     patterns: "*.*"  # Adjust this pattern to match the files you want to convert
+#   register: found_files
 
-- name: Execute dos2unix on found files
-  command: dos2unix "{{ item.path }}"
-  with_items: "{{ found_files.files }}"
+# - name: Execute dos2unix on found files
+#   command: dos2unix "{{ item.path }}"
+#   with_items: "{{ found_files.files }}"
+#   no_log: true
 
-- name: Install dependencies with Yarn
-  command: yarn install
-  args:
-    chdir: '{{ app_dir }}'
-  become_user: '{{ user_backstage }}'
+# - name: Install dependencies with Yarn
+#   command: yarn install
+#   args:
+#     chdir: '{{ app_dir }}'
+#   become_user: '{{ user_backstage }}'
 
-- name: Set permissions on /opt/backstage
-  command: chown -R vagrant:vagrant /opt/backstage
-  become: true  
+# - name: Set permissions on /opt/backstage
+#   command: chown -R vagrant:vagrant /opt/backstage
+#   become: true  
 
-- name: Synchronize files to /home/vagrant/backstage/skynet
-  synchronize:
-    src: '{{ app_dir }}'
-    dest: /home/vagrant/backstage
-    rsync_opts:
-      - --exclude=node_modules
-      - --exclude=dist-types
-      - --exclude=.git  
-  become_user: '{{ user_backstage }}'
+# - name: Synchronize files to /home/vagrant/backstage/skynet
+#   synchronize:
+#     src: '{{ app_dir }}'
+#     dest: /home/vagrant/backstage
+#     rsync_opts:
+#       - --exclude=node_modules
+#       - --exclude=dist-types
+#       - --exclude=.git  
+#   become_user: '{{ user_backstage }}'
 
 # - name: Start the application
 #   shell: |
 #     sudo pkill node        
 #     cd '{{ app_dir }}'    
-#     yarn dev > /dev/null 2>&1 &       
+#     yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &  
 #   args:
 #     chdir: '{{ app_dir }}'
 #   become_user: '{{ user_backstage }}'
-#   register: app_start_output
 
-- name: Start the application
-  shell: |
-    sudo pkill node        
-    cd '{{ app_dir }}'    
-    yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &  
-  args:
-    chdir: '{{ app_dir }}'
-  become_user: '{{ user_backstage }}'
+- name: Ensure Backstage starts successfully
+  block:
+    - name: Wait for yarn_dev.log to be populated and contain 'webpack compiled successfully'
+      wait_for:
+        path: '{{ app_dir }}/yarn_dev.log'
+        search_regex: 'webpack compiled successfully'
+        timeout: 120  # 10 minutes
+      become_user: '{{ user_backstage }}'
 
-- name: Display the application start output
-  command: cat '{{ app_dir }}/yarn_dev.log'
-  register: app_start_output
-  changed_when: false
+    - name: Display success message
+      debug:
+        msg: "Backstage started successfully!"
 
-- name: Show output
-  debug:
-    msg: "{{ app_start_output.stdout }}"
+  rescue:
+    - name: Display failure message
+      debug:
+        msg: "Backstage did not start successfully within the given time."
+
 
 

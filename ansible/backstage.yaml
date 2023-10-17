@@ -3,6 +3,6 @@
   #become: true
 
   roles:
-    - node
-    - docker
+    # - node
+    # - docker
     - app
