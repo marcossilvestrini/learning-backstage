@@ -1,6 +1,5 @@
 - name: Playbook for install and configure Backstage
-  hosts: backstage
-  
+  hosts: backstage  
   roles:
     - node
     - docker

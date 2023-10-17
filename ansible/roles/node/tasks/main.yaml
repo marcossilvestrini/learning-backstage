@@ -46,32 +46,27 @@
   shell: "source ~/.nvm/nvm.sh && nvm install --lts"
   become_user: '{{ user_backstage }}'
 
-- name: Find Node.js path
-  shell: which node
-  register: node_path
+- name: Source .bashrc
+  shell: source ~/.bashrc
   become_user: '{{ user_backstage }}'
 
-- name: Check Node.js
-  shell: "{{ node_path.stdout }} -v"
-  register: node_version
+- name: Check npm version
+  shell: npm -v
+  register: npm_version 
   become_user: '{{ user_backstage }}'
 
-- name: Display Node.js
-  debug:
-    var: node_version.stdout_lines
+- debug:
+    msg: "npm version is {{ npm_version.stdout }}"
 
-- name: Install Yarn
-  become: true
-  become_user: vagrant
+- name: Install Yarn  
+  become_user: '{{ user_backstage }}'
   shell: |
     source /home/vagrant/.bashrc
     npm install --global yarn
   args:
     executable: /bin/bash
 
-- name: Check Yarn version
-  become: true
-  become_user: vagrant
+- name: Check Yarn version  
   shell: yarn -v
   register: yarn_version
 
