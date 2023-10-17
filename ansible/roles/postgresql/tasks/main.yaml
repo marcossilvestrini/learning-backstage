@@ -4,16 +4,24 @@
     state: stopped
   ignore_errors: true
 
-- name: Check if /var/lib/pgsql/data directory exists  
-  stat:
-    path: /var/lib/pgsql/data
-  register: data_directory
-
-- name: Remove /var/lib/pgsql/data directory if it exists  
-  file:
-    path: /var/lib/pgsql/data
+- name: Uninstall PostgreSQL
+  dnf:
+    name:
+      - postgresql
+      - postgresql-server
+      - postgresql-contrib
+      - postgresql-libs
     state: absent
-  when: data_directory.stat.exists
+
+- name: Remove PostgreSQL folders
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /var/lib/pgsql
+    - /var/log/pgsql
+    - /etc/pgsql
+  ignore_errors: true
 
 - name: Install required packages
   dnf:
@@ -22,13 +30,37 @@
     state: present
 
 - name: Install PostgreSQL
-  yum:
-    name: postgresql-server
+  dnf:
+    name:
+      - postgresql
+      - postgresql-server
+      - postgresql-contrib
+      - postgresql-libs
     state: present
 
-- name: Initialize database
-  become: true
+- name: Initialize database  
   command: /usr/bin/postgresql-setup initdb
+
+- name: Start services  
+  service:
+    name: postgresql
+    state: started
+
+- name: Enable Postgresql
+  systemd:
+    name: postgresql
+    enabled: yes
+
+- name: Set password for postgres user
+  become: true
+  shell: |
+    sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '{{ postgres_password }}';"
+
+- name: Stop services  
+  service:
+    name: postgresql
+    state: stopped
+  ignore_errors: true
 
 - name: Configure PostgreSQL to use "md5" authentication for "postgres" user  
   template:
@@ -46,18 +78,12 @@
     group: postgres
     remote_src: true  
 
-- name: Start services
-  become: true
+- name: Start services  
   service:
     name: postgresql
     state: started
 
-- name: Enable Postgresql
-  systemd:
-    name: postgresql
-    enabled: yes
-
-- name: Set password for postgres user
-  become: true
-  shell: |
-    sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '{{ postgres_password }}';"
+# - name: Set password for postgres user
+#   become: true
+#   shell: |
+#     sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '{{ postgres_password }}';"

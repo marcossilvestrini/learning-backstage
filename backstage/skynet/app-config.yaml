@@ -18,7 +18,7 @@ backend:
   listen:
     port: 7007
     # Uncomment the following host directive to bind to specific interfaces
-    host: 0.0.0.0
+    #host: 0.0.0.0
   csp:
     connect-src: ["'self'", 'http:', 'https:']
     # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
@@ -34,10 +34,14 @@ backend:
     #connection: ':memory:'    
     client: pg
     connection:    
-      host: ${POSTGRES_HOST}
-      port: ${POSTGRES_PORT}
-      user: ${POSTGRES_USER}
-      password: ${POSTGRES_PASSWORD}        
+      # host: ${POSTGRES_HOST}
+      # port: ${POSTGRES_PORT}
+      # user: ${POSTGRES_USER}
+      # password: ${POSTGRES_PASSWORD}        
+      host: localhost
+      port: 5432
+      user: postgres
+      password: backstage
     # plugin:
     #   catalog:
     #     connection:
