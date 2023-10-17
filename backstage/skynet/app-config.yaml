@@ -18,7 +18,7 @@ backend:
   listen:
     port: 7007
     # Uncomment the following host directive to bind to specific interfaces
-    # host: 0.0.0.0
+    host: 0.0.0.0
   csp:
     connect-src: ["'self'", 'http:', 'https:']
     # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
@@ -31,26 +31,26 @@ backend:
   # The production database configuration is stored in app-config.production.yaml
   database:
     #client: better-sqlite3
-    #connection: ':memory:'
+    #connection: ':memory:'    
     client: pg
-    connection:
-        host: ${POSTGRES_HOST}
-        port: ${POSTGRES_PORT}
-        user: ${POSTGRES_USER}
-        password: ${POSTGRES_PASSWORD}        
-    plugin:
-        catalog:
-          connection:
-            database: backstage_db
-        auth:
-          connection:
-            database: backstage_db
-        app:
-          connection:
-            database: backstage_db
-        scaffolder:
-          connection:
-            database: backstage_db
+    connection:    
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}        
+    # plugin:
+    #   catalog:
+    #     connection:
+    #       database: backstage_db
+    #   auth:
+    #     connection:
+    #       database: backstage_db
+    #   app:
+    #     connection:
+    #       database: backstage_db
+    #   scaffolder:
+    #     connection:
+    #       database: backstage_db
 cache:
   store: redis
   connection: 'redis://${REDIS_USER}:${REDIS_PASSWD}@localhost:6379'            

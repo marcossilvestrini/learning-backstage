@@ -23,6 +23,16 @@
   become_user: '{{ user_backstage }}'
   when: source_directory.stat.exists
 
+- name: Find and run dos2unix
+  find:
+    paths: '{{ app_dir }}'
+    patterns: "*.*"  # Adjust this pattern to match the files you want to convert
+  register: found_files
+
+- name: Execute dos2unix on found files
+  command: dos2unix "{{ item.path }}"
+  with_items: "{{ found_files.files }}"
+
 - name: Install dependencies with Yarn
   command: yarn install
   args:
@@ -43,23 +53,14 @@
       - --exclude=.git  
   become_user: '{{ user_backstage }}'
 
-- name: Find and run dos2unix
-  find:
-    paths: '{{ app_dir }}'
-    patterns: "*.*"  # Adjust this pattern to match the files you want to convert
-  register: found_files
-
-- name: Execute dos2unix on found files
-  command: dos2unix "{{ item.path }}"
-  with_items: "{{ found_files.files }}"
 
 - name: Start the application
   shell: |
     sudo pkill node    
-    source '{{ app_dir }}'/.env
+    #source '{{ app_dir }}'/.env
     cd '{{ app_dir }}'
-    #yarn dev > /dev/null 2>&1 &   
-    yarn dev
+    #yarn dev
+    yarn dev > /dev/null 2>&1 &       
   args:
     chdir: '{{ app_dir }}'
   become_user: '{{ user_backstage }}'
