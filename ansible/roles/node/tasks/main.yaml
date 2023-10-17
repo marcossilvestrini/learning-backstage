@@ -46,8 +46,13 @@
   shell: "source ~/.nvm/nvm.sh && nvm install --lts"
   become_user: '{{ user_backstage }}'
 
+- name: Find Node.js path
+  shell: which node
+  register: node_path
+  become_user: '{{ user_backstage }}'
+
 - name: Check Node.js
-  shell: "node -v"
+  shell: "{{ node_path.stdout }} -v"
   register: node_version
   become_user: '{{ user_backstage }}'
 

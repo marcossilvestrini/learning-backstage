@@ -53,16 +53,32 @@
       - --exclude=.git  
   become_user: '{{ user_backstage }}'
 
+# - name: Start the application
+#   shell: |
+#     sudo pkill node        
+#     cd '{{ app_dir }}'    
+#     yarn dev > /dev/null 2>&1 &       
+#   args:
+#     chdir: '{{ app_dir }}'
+#   become_user: '{{ user_backstage }}'
+#   register: app_start_output
+
 - name: Start the application
   shell: |
-    sudo pkill node    
-    #source '{{ app_dir }}'/.env
-    cd '{{ app_dir }}'
-    #yarn dev
-    yarn dev > /dev/null 2>&1 &       
+    sudo pkill node        
+    cd '{{ app_dir }}'    
+    yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &  
   args:
     chdir: '{{ app_dir }}'
   become_user: '{{ user_backstage }}'
+
+- name: Display the application start output
+  command: cat '{{ app_dir }}/yarn_dev.log'
   register: app_start_output
+  changed_when: false
+
+- name: Show output
+  debug:
+    msg: "{{ app_start_output.stdout }}"
 
 
