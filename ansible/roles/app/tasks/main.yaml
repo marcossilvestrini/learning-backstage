@@ -22,8 +22,7 @@
   synchronize:
     src: '{{ app_scaff }}'
     dest: '{{ app_dir }}'
-    recursive: yes
-  
+    recursive: yes  
   when: source_directory.stat.exists
 
 - name: Find and run dos2unix

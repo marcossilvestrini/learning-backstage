@@ -17,9 +17,9 @@
     executable: /bin/bash
   when: not nvm_folder.stat.exists
 
-- name: Set NVM_DIR environment variable
-  set_fact:
-    nvm_dir: "{{ ansible_env.HOME }}/.nvm"
+# - name: Set NVM_DIR environment variable
+#   set_fact:
+#     nvm_dir: "{{ ansible_env.HOME }}/.nvm"
 
 # - name: Export NVM variables
 #   shell: |
@@ -56,18 +56,26 @@
 
 - name: Install Node.js using nvm
   shell: |
+    source "{{ ansible_env.HOME }}/.bashrc"
     source "{{ ansible_env.HOME }}/.nvm/nvm.sh"
     nvm install --lts
   args:
     executable: /bin/bash  
-  when: npm_version.stdout is not defined or npm_version.stdout == ""
   
 - name: Check npm version
-  shell: /bin/bash -l -c "npm -v"  
+  shell: |
+    source "{{ ansible_env.HOME }}/.bashrc"
+    npm -v
+  args:
+    executable: /bin/bash  
   register: npm_version
-  retries: 3
-  delay: 5
-  until: npm_version.rc == 0
+
+# - name: Check npm version
+#   shell: /bin/bash -l -c "npm -v"  
+#   register: npm_version
+#   retries: 3
+#   delay: 5
+#   until: npm_version.rc == 0
 
 - debug:
     msg: "npm version is {{ npm_version.stdout }}"

@@ -48,6 +48,7 @@
     state: latest
   loop:
     - "{{ packages }}"
+  no_log: true
 
 - name: Set /etc/profile
   copy:
