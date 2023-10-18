@@ -1,75 +1,85 @@
-- name: Remove existing nvm directory
+#----------------- NVM -----------------------
+- name: Remove existing .nvm directory
   file:
-    path: ~/.nvm
+    path: source "{{ ansible_env.HOME }}/.nvm"
     state: absent
   ignore_errors: true
-  become_user: '{{ user_backstage }}'
-
+  
 - name: Set NVM_DIR environment variable
   set_fact:
     nvm_dir: "{{ ansible_env.HOME }}/.nvm"
-  become_user: '{{ user_backstage }}'
-
+ 
 - name: Download and install NVM
   shell: |
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
   args:
     executable: /bin/bash
-  become_user: '{{ user_backstage }}'
-
-- name: Source NVM
+ 
+- name: Export  NVM variables
   shell: |
     export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "{{ nvm_dir }}" || printf %s "${XDG_CONFIG_HOME}/nvm")"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
   args:
     executable: /bin/bash
-  become_user: '{{ user_backstage }}'
 
 - name: Check nvm version
-  shell: "source ~/.nvm/nvm.sh && nvm -v"
-  register: nvm_version
-  become_user: '{{ user_backstage }}'
-
+  shell: |
+    source "{{ ansible_env.HOME }}/.nvm/nvm.sh"    
+    nvm -v
+  args:
+    executable: /bin/bash   
+  
 - name: Display nvm version
   debug:
     var: nvm_version.stdout
-  become_user: '{{ user_backstage }}'
+  
+#----------------- NPM -----------------------
 
 - name: Remove existing .npm directory
   file:
     path: "{{ ansible_env.HOME }}/.npm"
     state: absent
   ignore_errors: true
-  become_user: '{{ user_backstage }}'
 
 - name: Install Node.js using nvm
-  shell: "source ~/.nvm/nvm.sh && nvm install --lts"
-  become_user: '{{ user_backstage }}'
-
-- name: Source .bashrc
-  shell: source ~/.bashrc
-  become_user: '{{ user_backstage }}'
-
+  shell: |
+    source "{{ ansible_env.HOME }}/.nvm/nvm.sh"
+    nvm install --lts
+  args:
+    executable: /bin/bash   
+  
 - name: Check npm version
-  shell: npm -v
-  register: npm_version 
-  become_user: '{{ user_backstage }}'
+  shell: /bin/bash -l -c "npm -v"  
+  register: npm_version
+  retries: 3
+  delay: 5
+  until: npm_version.rc == 0
 
 - debug:
     msg: "npm version is {{ npm_version.stdout }}"
 
+#----------------- YARN ----------------------
+
+- name: Remove existing .yarn directory
+  file:
+    path: "{{ ansible_env.HOME }}/.yarn"
+    state: absent
+  ignore_errors: true
+
 - name: Install Yarn  
-  become_user: '{{ user_backstage }}'
-  shell: |
-    source /home/vagrant/.bashrc
+  shell:
     npm install --global yarn
   args:
-    executable: /bin/bash
+    executable: /bin/bash    
 
 - name: Check Yarn version  
-  shell: yarn -v
+  shell:
+    yarn -v    
+  args:
+    executable: /bin/bash   
   register: yarn_version
 
 - name: Display Yarn version
   debug:
     var: yarn_version.stdout
+  

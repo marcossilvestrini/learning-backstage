@@ -10,6 +10,7 @@ redis_password: backstage
 
 # Frontend
 app_dir: /opt/backstage/skynet
+app_scaff: /home/vagrant/backstage/skynet
 appBaseURL: http://backstage.skynet.com.br
 
 # Backend

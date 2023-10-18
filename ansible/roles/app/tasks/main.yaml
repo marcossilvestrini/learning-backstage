@@ -15,18 +15,21 @@
   
 - name: Check if source directory exists
   stat:
-    path: "/home/vagrant/backstage/skynet"
+    path: '{{ app_scaff }}'
   register: source_directory
 
 - name: Copy skynet to /opt/backstage
-  command: cp -r /home/vagrant/backstage/skynet /opt/backstage
+  synchronize:
+    src: '{{ app_scaff }}'
+    dest: '{{ app_dir }}'
+    recursive: yes
   
   when: source_directory.stat.exists
 
 - name: Find and run dos2unix
   find:
     paths: '{{ app_dir }}'
-    patterns: "*.*"  # Adjust this pattern to match the files you want to convert
+    patterns: "*.*"
   register: found_files
 
 - name: Execute dos2unix on found files
@@ -43,7 +46,7 @@
   command: chown -R vagrant:vagrant /opt/backstage
   become: true  
 
-- name: Synchronize files to /home/vagrant/backstage/skynet
+- name: Synchronize files to '{{ app_scaff }}'
   synchronize:
     src: '{{ app_dir }}'
     dest: /home/vagrant/backstage
@@ -62,7 +65,7 @@
 
 - name: Ensure Backstage starts successfully
   block:
-    - name: Wait for yarn_dev.log to be populated and contain 'webpack compiled successfully'
+    - name: Wait for Backstage Stack Up'
       wait_for:
         path: '{{ app_dir }}/yarn_dev.log'
         search_regex: 'webpack compiled successfully'
