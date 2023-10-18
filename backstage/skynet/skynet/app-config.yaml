@@ -34,14 +34,10 @@ backend:
     #connection: ':memory:'    
     client: pg
     connection:    
-      # host: ${POSTGRES_HOST}
-      # port: ${POSTGRES_PORT}
-      # user: ${POSTGRES_USER}
-      # password: ${POSTGRES_PASSWORD}        
-      host: localhost
-      port: 5432
-      user: postgres
-      password: backstage
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}        
     # plugin:
     #   catalog:
     #     connection:

@@ -1,8 +1,8 @@
 - name: Create directory if it doesn't exist
   command: test -d '{{ app_dir }}'
-  become: true  
-  ignore_errors: true
+  become: true    
   register: directory_check
+  ignore_errors: true
 
 - name: Create '{{ app_dir }}' directory
   command: mkdir -p '{{ app_dir }}'
@@ -37,25 +37,15 @@
   no_log: true
 
 - name: Install dependencies with Yarn
-  shell: |
-    source "{{ ansible_env.HOME }}/.bashrc"
-    cd '{{ app_dir }}'
-    yarn install
+  shell: source "{{ ansible_env.HOME }}/.bashrc" && cd '{{ app_dir }}'  && yarn install && yarn cache clean
   args:    
     executable: /bin/bash
+    chdir: '{{ app_dir }}'
   
 - name: Set permissions on /opt/backstage
   command: chown -R vagrant:vagrant /opt/backstage
   become: true  
 
-- name: Synchronize files to '{{ app_scaff }}'
-  synchronize:
-    src: '{{ app_dir }}'
-    dest: /home/vagrant/backstage
-    rsync_opts:
-      - --exclude=node_modules
-      - --exclude=dist-types
-      - --exclude=.git  
 
 - name: Kill any node processes
   command: pkill node
@@ -63,9 +53,7 @@
   ignore_errors: true  # Assuming it's okay if no process is found
 
 - name: Start the application in background
-  shell: |
-    source {{ ansible_env.HOME }}/.bashrc
-    yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &
+  shell: source {{ ansible_env.HOME }}/.bashrc && yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &
   args:
     chdir: '{{ app_dir }}'
     executable: /bin/bash
