@@ -1,9 +1,14 @@
 #----------------- NVM -----------------------
+- name: Check if .nvm directory exists
+  stat:
+    path: "{{ ansible_env.HOME }}/.nvm"
+  register: nvm_dir
+
 - name: Remove existing .nvm directory
   file:
-    path: source "{{ ansible_env.HOME }}/.nvm"
+    path: "{{ ansible_env.HOME }}/.nvm"
     state: absent
-  ignore_errors: true
+  when: nvm_dir.stat.exists
   
 - name: Set NVM_DIR environment variable
   set_fact:
@@ -14,8 +19,9 @@
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
   args:
     executable: /bin/bash
+  when: not nvm_dir.stat.exists
  
-- name: Export  NVM variables
+- name: Export NVM variables
   shell: |
     export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "{{ nvm_dir }}" || printf %s "${XDG_CONFIG_HOME}/nvm")"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
@@ -28,25 +34,32 @@
     nvm -v
   args:
     executable: /bin/bash   
-  
+  register: nvm_version
+
 - name: Display nvm version
   debug:
     var: nvm_version.stdout
-  
+
 #----------------- NPM -----------------------
+
+- name: Check if .npm directory exists
+  stat:
+    path: "{{ ansible_env.HOME }}/.npm"
+  register: npm_dir
 
 - name: Remove existing .npm directory
   file:
     path: "{{ ansible_env.HOME }}/.npm"
     state: absent
-  ignore_errors: true
+  when: npm_dir.stat.exists
 
 - name: Install Node.js using nvm
   shell: |
     source "{{ ansible_env.HOME }}/.nvm/nvm.sh"
     nvm install --lts
   args:
-    executable: /bin/bash   
+    executable: /bin/bash  
+  when: npm_version.stdout is not defined or npm_version.stdout == ""
   
 - name: Check npm version
   shell: /bin/bash -l -c "npm -v"  
@@ -60,21 +73,25 @@
 
 #----------------- YARN ----------------------
 
+- name: Check if .yarn directory exists
+  stat:
+    path: "{{ ansible_env.HOME }}/.yarn"
+  register: yarn_dir
+
 - name: Remove existing .yarn directory
   file:
     path: "{{ ansible_env.HOME }}/.yarn"
     state: absent
-  ignore_errors: true
+  when: yarn_dir.stat.exists
 
 - name: Install Yarn  
-  shell:
-    npm install --global yarn
+  shell: npm install --global yarn
   args:
-    executable: /bin/bash    
+    executable: /bin/bash 
+  when: yarn_version.stdout is not defined or yarn_version.stdout == ""
 
 - name: Check Yarn version  
-  shell:
-    yarn -v    
+  shell: yarn -v    
   args:
     executable: /bin/bash   
   register: yarn_version
@@ -82,4 +99,3 @@
 - name: Display Yarn version
   debug:
     var: yarn_version.stdout
-  

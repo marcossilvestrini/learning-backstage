@@ -1,12 +1,14 @@
-- name: Find and run dos2unix
-  find:
-    paths: /home/vagrant
-    patterns: "*.*"  # Adjust this pattern to match the files you want to convert
-  register: found_files
+- name: Find files with DOS line-endings
+  shell: grep -l $'\r' "{{ item.path }}"
+  register: dos_files
+  with_items: "{{ found_files.files }}"
+  failed_when: false
+  changed_when: false
 
 - name: Execute dos2unix on found files
-  command: dos2unix "{{ item.path }}"
-  with_items: "{{ found_files.files }}"
+  command: dos2unix "{{ item.item.path }}"
+  when: item.stdout != ""
+  with_items: "{{ dos_files.results }}"
 
 - name: Change permissions of .sh files
   find:
@@ -30,8 +32,10 @@
     name: root
     password: "{{ password_backstage }}"  # Replace with your encrypted password
   
-- name: Download and install EPEL repository
-  command: dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
+- name: Ensure EPEL repository is installed
+  dnf:
+    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
+    state: present
 
 - name: Install Commons Packages
   dnf:
@@ -81,7 +85,7 @@
   stat:
     path: /etc/ssh/sshd_config.d/50-redhat.conf
   register: sshd_config_check
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: Remove /etc/ssh/sshd_config.d/50-redhat.conf if it exists
   file:
@@ -130,22 +134,22 @@
 
 - name: Set ol9_codeready_builder repository to enabled
   command: dnf config-manager --set-enabled ol9_codeready_builder
-  ignore_errors: yes  # Use ignore_errors to continue even if the repository is already enabled
+  ignore_errors: true  # Use ignore_errors to continue even if the repository is already enabled
 
 - name: Update package cache
   dnf:
     name: "*"
-    state: latest
-  become: yes
+    state: latest  
 
-- name: Install X11 packages
-  command: "dnf install -y {{ x11_packages | join(' ') }}"
-  vars:
-    x11_packages:
-      - xorg-x11-server-Xorg.x86_64
-      - xorg-x11-xauth.x86_64
-      - xorg-x11-server-utils.x86_64
-      - xorg-x11-utils.x86_64
+- name: Install X11 packages  
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - xorg-x11-server-Xorg.x86_64
+    - xorg-x11-xauth.x86_64
+    - xorg-x11-server-utils.x86_64
+    - xorg-x11-utils.x86_64
 
 - name: Copy sysstat configuration file
   copy:
