@@ -27,6 +27,5 @@ fi
 
 # Create cron job
 if ! crontab -l | grep -q "/usr/local/bin/sync_script.sh"; then  
-  (echo "* * * * * /bin/bash /usr/local/bin/sync_script.sh") | crontab -    
-  echo "Crontab create with success!!!"
+  (echo "* * * * * /bin/bash /usr/local/bin/sync_script.sh") | crontab -
 fi

@@ -40,9 +40,9 @@
 - name: Install dependencies with Yarn
   shell: |
     source "{{ ansible_env.HOME }}/.bashrc"
+    cd '{{ app_dir }}'
     yarn install
-  args:
-    chdir: '{{ app_dir }}'
+  args:    
     executable: /bin/bash
   
 - name: Set permissions on /opt/backstage
