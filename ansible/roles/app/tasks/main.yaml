@@ -63,14 +63,10 @@
   become: true
   ignore_errors: true  # Assuming it's okay if no process is found
 
-- name: Source bashrc
-  shell: source {{ ansible_env.HOME }}/.bashrc
-  args:
-    executable: /bin/bash
-    chdir: '{{ app_dir }}'
-
 - name: Start the application in background
-  shell: yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &
+  shell: |
+    source {{ ansible_env.HOME }}/.bashrc
+    yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &
   args:
     chdir: '{{ app_dir }}'
     executable: /bin/bash

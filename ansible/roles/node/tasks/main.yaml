@@ -21,12 +21,13 @@
   set_fact:
     nvm_dir: "{{ ansible_env.HOME }}/.nvm"
 
-- name: Export NVM variables
-  shell: |
-    export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "{{ nvm_dir }}" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
-  args:
-    executable: /bin/bash
+# - name: Export NVM variables
+#   shell: |
+#     export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "{{ nvm_dir }}" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+#     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+#   args:
+#     executable: /bin/bash
+#   ignore_errors: true
 
 - name: Check nvm version
   shell: |
