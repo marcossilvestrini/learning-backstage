@@ -32,13 +32,9 @@ export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || pr
 # Cron for sync backstage files
 if [ -f "scripts/sync-backstage.sh" ]; then
     source scripts/sync-backstage.sh
-else
-    echo "Error loading environment of backstage!!!"
 fi
 
 # Env backstage
 if [ -f "/opt/backstage/skynet/.env" ]; then
     source /opt/backstage/skynet/.env
-else
-    echo "Error loading environment of backstage!!!"
 fi

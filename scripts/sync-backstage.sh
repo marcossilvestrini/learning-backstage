@@ -22,7 +22,7 @@ if [ ! -f "/bin/bash /usr/local/bin/sync_script.sh" ]; then
 fi
 
 # First sync files
-sudo nohup rsync -av --exclude=node_modules --exclude=dist-types --exclude=.git /home/vagrant/backstage/skynet/ /opt/backstage/skynet/ </dev/null &>/dev/null &
+(sudo nohup rsync -av --exclude=node_modules --exclude=dist-types --exclude=.git /home/vagrant/backstage/skynet/ /opt/backstage/skynet/ </dev/null &>/dev/null &)
 #rsync -av --exclude=node_modules --exclude=dist-types --exclude=.git /opt/backstage/skynet/ /home/vagrant/backstage/skynet/
 
 # Create cron job

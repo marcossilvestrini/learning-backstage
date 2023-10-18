@@ -1,3 +1,8 @@
+- name: Find all files in a directory
+  find:
+    paths: /home/vagrant/
+  register: found_files
+
 - name: Find files with DOS line-endings
   shell: grep -l $'\r' "{{ item.path }}"
   register: dos_files

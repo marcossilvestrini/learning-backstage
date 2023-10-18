@@ -38,9 +38,12 @@
   no_log: true
 
 - name: Install dependencies with Yarn
-  command: yarn install
+  shell: |
+    source "{{ ansible_env.HOME }}/.bashrc"
+    yarn install
   args:
     chdir: '{{ app_dir }}'
+    executable: /bin/bash
   
 - name: Set permissions on /opt/backstage
   command: chown -R vagrant:vagrant /opt/backstage
@@ -55,13 +58,22 @@
       - --exclude=dist-types
       - --exclude=.git  
 
-- name: Start the application
-  shell: |
-    sudo pkill node        
-    cd '{{ app_dir }}'    
-    yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &  
+- name: Kill any node processes
+  command: pkill node
+  become: true
+  ignore_errors: true  # Assuming it's okay if no process is found
+
+- name: Source bashrc
+  shell: source {{ ansible_env.HOME }}/.bashrc
+  args:
+    executable: /bin/bash
+    chdir: '{{ app_dir }}'
+
+- name: Start the application in background
+  shell: yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &
   args:
     chdir: '{{ app_dir }}'
+    executable: /bin/bash
 
 - name: Ensure Backstage starts successfully
   block:

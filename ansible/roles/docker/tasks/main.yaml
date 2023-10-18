@@ -32,7 +32,7 @@
     state: started
     enabled: true
 
-- name: Add user ''{{ user_backstage }}'' to the 'docker' group
+- name: Add user '{{ user_backstage }}' to the docker group
   become: true  
   user:
     name: '{{ user_backstage }}'
