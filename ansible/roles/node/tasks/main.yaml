@@ -1,91 +1,93 @@
-#----------------- NVM -----------------------
-- name: Check if .nvm directory exists
-  stat:
-    path: "{{ ansible_env.HOME }}/.nvm"
-  register: nvm_folder
+- name: Ensure curl and required tools are installed
+  become: true
+  yum:
+    name:
+      - curl
+      - gcc-c++
+      - make
+    state: present
 
-- name: Remove existing .nvm directory
-  file:
-    path: "{{ ansible_env.HOME }}/.nvm"
-    state: absent
-  when: nvm_folder.stat.exists
-
-- name: Download and install NVM
-  shell: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-  args:
-    chdir: "{{ ansible_env.HOME }}"
-    executable: /bin/bash
-  when: not nvm_folder.stat.exists
-
-- name: Check nvm version
-  shell: source "{{ ansible_env.HOME }}/.bashrc" && nvm -v
-  args:
-    chdir: "{{ ansible_env.HOME }}"
-    executable: /bin/bash
-  register: nvm_version
+- name: Check node version
+  command: node -v
+  register: node_version_output
+  changed_when: false
   ignore_errors: true
 
-- name: Display nvm version
+- name: Define node_version based on node_version_output
+  set_fact:
+    node_version: "{{ (node_version_output.stdout[1:] if node_version_output.stdout.startswith('v') else node_version_output.stdout) | default('') }}"
+  changed_when: false
+
+- name: Add Node.js yum repository
+  become: true
+  yum_repository:
+    name: nodesource
+    description: Node.js official repository
+    baseurl: https://rpm.nodesource.com/pub_16.x/el/$releasever/$basearch/
+    gpgkey: https://rpm.nodesource.com/pub/el/NODESOURCE-GPG-SIGNING-KEY-EL
+    gpgcheck: yes
+    enabled: yes  
+  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('16', '<'))
+
+- name: Install Node.js
+  become: true
+  yum:
+    name: nodejs
+    state: latest
+  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('16', '<'))
+
+- name: Display node version
   debug:
-    var: nvm_version.stdout
-
-#----------------- NPM -----------------------
-
-- name: Check if .npm directory exists
-  stat:
-    path: "{{ ansible_env.HOME }}/.npm"
-  register: npm_dir
-
-- name: Remove existing .npm directory
-  file:
-    path: "{{ ansible_env.HOME }}/.npm"
-    state: absent
-  when: npm_dir.stat.exists
-
-- name: Install Node.js using nvm
-  shell: source "{{ ansible_env.HOME }}/.bashrc" &&  nvm install --lts
-  args:
-    chdir: "{{ ansible_env.HOME }}"
-    executable: /bin/bash
-
-- name: Check Node.js version
-  shell: source "{{ ansible_env.HOME }}/.bashrc" && npm -v
-  args:
-    chdir: "{{ ansible_env.HOME }}"
-    executable: /bin/bash
-  register: npm_version
+    msg: "Node version is {{ node_version | default('Not installed. Installing success!!!') }}"
+ 
+- name: Check yarn version
+  command: yarn -v
+  register: yarn_version_output
+  changed_when: false
   ignore_errors: true
 
-- debug:
-    msg: "npm version is {{ npm_version.stdout }}"
+- name: Define yarn_version based on yarn_version_output
+  set_fact:
+    yarn_version: "{{ yarn_version_output.stdout | default('0.0.0') }}"
+  changed_when: false
 
-#----------------- YARN ----------------------
-
-- name: Check if .yarn directory exists
-  stat:
-    path: "{{ ansible_env.HOME }}/.yarn"
-  register: yarn_dir
-
-- name: Remove existing .yarn directory
-  file:
-    path: "{{ ansible_env.HOME }}/.yarn"
-    state: absent
-  when: yarn_dir.stat.exists
-
-- name: Install Yarn  
-  shell: source "{{ ansible_env.HOME }}/.bashrc" && npm install --global yarn
-  args:
-    chdir: "{{ ansible_env.HOME }}"
-    executable: /bin/bash  
-
-- name: Check Yarn version
-  shell: source "{{ ansible_env.HOME }}/.bashrc"  && yarn -v
-  args:
-    chdir: "{{ ansible_env.HOME }}"
-    executable: /bin/bash
-  register: yarn_version
+- name: Get latest Yarn version from GitHub
+  shell: "curl -s https://api.github.com/repos/yarnpkg/yarn/releases/latest | jq -r .tag_name"
+  register: latest_yarn_version_output
+  changed_when: false
   ignore_errors: true
 
-- name: Display Yarn version
+- name: Define latest_yarn_version based on latest_yarn_version_output
+  set_fact:
+    latest_yarn_version: "{{ latest_yarn_version_output.stdout[1:] }}"
+  changed_when: false
+
+- name: Add Yarn yum repository
+  become: true
+  yum_repository:
+    name: yarn
+    description: Yarn Repository
+    baseurl: https://dl.yarnpkg.com/rpm/
+    gpgkey: https://dl.yarnpkg.com/rpm/pubkey.gpg
+    gpgcheck: yes
+    enabled: yes
+  when: 
+    - yarn_version_output.rc != 0
+    - yarn_version == '0.0.0'
+    - yarn_version != latest_yarn_version
+
+- name: Install Yarn
+  become: true
+  yum:
+    name: yarn
+    state: latest
+  when: 
+    - yarn_version_output.rc != 0
+    - yarn_version == '0.0.0'
+    - yarn_version != latest_yarn_version
+
+- name: Display yarn version
   debug:
-    var: yarn_version.stdout
+    msg: "Yarn version is {{ yarn_version | default('Not installed') }}"
+
+

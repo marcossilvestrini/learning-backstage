@@ -1,33 +1,98 @@
-- name: Stop services  
-  service:
-    name: postgresql
-    state: stopped
-  ignore_errors: true
+# - name: Stop services  
+#   service:
+#     name: postgresql
+#     state: stopped
+#   ignore_errors: true
 
-- name: Uninstall PostgreSQL
-  dnf:
-    name:
-      - postgresql
-      - postgresql-server
-      - postgresql-contrib
-      - postgresql-libs
-    state: absent
+# - name: Uninstall PostgreSQL
+#   dnf:
+#     name:
+#       - postgresql
+#       - postgresql-server
+#       - postgresql-contrib
+#       - postgresql-libs
+#     state: absent
 
-- name: Remove PostgreSQL folders
-  file:
-    path: "{{ item }}"
-    state: absent
-  loop:
-    - /var/lib/pgsql
-    - /var/log/pgsql
-    - /etc/pgsql
-  ignore_errors: true
+# - name: Remove PostgreSQL folders
+#   file:
+#     path: "{{ item }}"
+#     state: absent
+#   loop:
+#     - /var/lib/pgsql
+#     - /var/log/pgsql
+#     - /etc/pgsql
+#   ignore_errors: true
+
+# - name: Install required packages
+#   dnf:
+#     name:
+#       - python3-psycopg2
+#     state: present
+
+# - name: Install PostgreSQL
+#   dnf:
+#     name:
+#       - postgresql
+#       - postgresql-server
+#       - postgresql-contrib
+#       - postgresql-libs
+#     state: present
+
+# - name: Initialize database  
+#   command: /usr/bin/postgresql-setup initdb
+
+# - name: Start services  
+#   service:
+#     name: postgresql
+#     state: started
+
+# - name: Enable Postgresql
+#   systemd:
+#     name: postgresql
+#     enabled: yes
+
+# - name: Set password for postgres user
+#   become: true
+#   shell: |
+#     sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '{{ postgres_password }}';"
+
+# - name: Stop services  
+#   service:
+#     name: postgresql
+#     state: stopped
+#   ignore_errors: true
+
+# - name: Configure PostgreSQL to use "md5" authentication for "postgres" user  
+#   template:
+#     src: pg_hba.conf.j2
+#     dest: /var/lib/pgsql/data/pg_hba.conf
+#     owner: postgres
+#     group: postgres
+#     remote_src: true  
+
+# - name: Allow PostgreSQL database server to listen on all network interfaces  
+#   template:
+#     src: postgresql.conf.j2
+#     dest: /var/lib/pgsql/data/postgresql.conf
+#     owner: postgres
+#     group: postgres
+#     remote_src: true  
+
+# - name: Start services  
+#   service:
+#     name: postgresql
+#     state: started
 
 - name: Install required packages
   dnf:
     name:
       - python3-psycopg2
     state: present
+
+- name: Check if PostgreSQL database is initialized
+  stat:
+    path: /var/lib/pgsql/data/PG_VERSION
+  register: pg_data
 
 - name: Install PostgreSQL
   dnf:
@@ -40,13 +105,14 @@
 
 - name: Initialize database  
   command: /usr/bin/postgresql-setup initdb
+  when: not pg_data.stat.exists
 
-- name: Start services  
+- name: Start PostgreSQL service 
   service:
     name: postgresql
-    state: started
+    state: started  
 
-- name: Enable Postgresql
+- name: Enable PostgreSQL
   systemd:
     name: postgresql
     enabled: yes
@@ -55,12 +121,14 @@
   become: true
   shell: |
     sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '{{ postgres_password }}';"
+  when: not pg_data.stat.exists
 
-- name: Stop services  
+- name: Stop PostgreSQL service  
   service:
     name: postgresql
     state: stopped
   ignore_errors: true
+  when: not pg_data.stat.exists
 
 - name: Configure PostgreSQL to use "md5" authentication for "postgres" user  
   template:
@@ -69,6 +137,7 @@
     owner: postgres
     group: postgres
     remote_src: true  
+  when: not pg_data.stat.exists
 
 - name: Allow PostgreSQL database server to listen on all network interfaces  
   template:
@@ -77,13 +146,9 @@
     owner: postgres
     group: postgres
     remote_src: true  
+  when: not pg_data.stat.exists
 
-- name: Start services  
+- name: Start PostgreSQL service  
   service:
     name: postgresql
     state: started
-
-# - name: Set password for postgres user
-#   become: true
-#   shell: |
-#     sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '{{ postgres_password }}';"

@@ -30,9 +30,9 @@ export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || pr
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
 
 # Cron for sync backstage files
-if [ -f "scripts/sync-backstage.sh" ]; then
-    source scripts/sync-backstage.sh
-fi
+# if [ -f "scripts/sync-backstage.sh" ]; then
+#     source scripts/sync-backstage.sh
+# fi
 
 # Env backstage
 if [ -f "/opt/backstage/skynet/.env" ]; then
