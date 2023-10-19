@@ -41,6 +41,15 @@
   args:    
     executable: /bin/bash
     chdir: '{{ app_dir }}'
+
+- name: Synchronize files to '{{ app_scaff }}'
+  synchronize:
+    src: '{{ app_dir }}/'  # Garantir que há uma barra no final
+    dest: /home/vagrant/backstage
+    rsync_opts:
+      - --exclude=node_modules
+      - --exclude=dist-types
+      - --exclude=.git
   
 - name: Set permissions on /opt/backstage
   command: chown -R vagrant:vagrant /opt/backstage
