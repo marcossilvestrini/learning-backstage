@@ -36,9 +36,21 @@
     state: latest
   when: node_version_output.rc != 0 or (node_version != '' and node_version is version('16', '<'))
 
+- name: Check node version after installation
+  command: node -v
+  register: node_version_after_install_output
+  changed_when: false
+  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('16', '<'))
+
+- name: Define node_version_after_install based on node_version_after_install_output
+  set_fact:
+    node_version_after_install: "{{ (node_version_after_install_output.stdout[1:] if node_version_after_install_output.stdout.startswith('v') else node_version_after_install_output.stdout) | default('') }}"
+  changed_when: false
+  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('16', '<'))
+
 - name: Display node version
   debug:
-    msg: "Node version is {{ node_version | default('Not installed. Installing success!!!') }}"
+    msg: "Node version is {{ node_version_after_install | default(node_version | default('Not installed.')) }}"
  
 - name: Check yarn version
   command: yarn -v
@@ -71,23 +83,30 @@
     gpgkey: https://dl.yarnpkg.com/rpm/pubkey.gpg
     gpgcheck: yes
     enabled: yes
-  when: 
-    - yarn_version_output.rc != 0
-    - yarn_version == '0.0.0'
-    - yarn_version != latest_yarn_version
+  when: yarn_version_output.rc != 0 or yarn_version == '0.0.0' or yarn_version != latest_yarn_version
 
 - name: Install Yarn
   become: true
   yum:
     name: yarn
     state: latest
-  when: 
-    - yarn_version_output.rc != 0
-    - yarn_version == '0.0.0'
-    - yarn_version != latest_yarn_version
+  when: yarn_version_output.rc != 0 or yarn_version == '0.0.0' or yarn_version != latest_yarn_version
+  
+
+- name: Check yarn version after installation
+  command: yarn -v
+  register: yarn_version_after_install_output
+  changed_when: false
+  when: yarn_version_output.rc != 0 or yarn_version == '0.0.0' or yarn_version != latest_yarn_version
+
+- name: Define yarn_version_after_install based on yarn_version_after_install_output
+  set_fact:
+    yarn_version_after_install: "{{ yarn_version_after_install_output.stdout | default('0.0.0') }}"
+  changed_when: false
+  when: yarn_version_output.rc != 0 or yarn_version == '0.0.0' or yarn_version != latest_yarn_version
 
 - name: Display yarn version
   debug:
-    msg: "Yarn version is {{ yarn_version | default('Not installed') }}"
+    msg: "Yarn version is {{ yarn_version_after_install | default(yarn_version | default('Not installed')) }}"
 
 
