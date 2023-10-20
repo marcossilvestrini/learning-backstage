@@ -76,15 +76,6 @@
 #   debug:
 #     var: app_dir
 
-# - name: Start the application in background
-#   shell: |
-#     source {{ ansible_env.HOME }}/.bashrc     
-#     yarn install
-#     yarn dev #> '{{ app_dir }}/yarn_dev.log' 2>&1 &  
-#   args:
-#     chdir: '{{ app_dir }}'
-#     executable: /bin/bash
-
 - name: Install dependencies
   shell: yarn install
   args:
@@ -92,25 +83,25 @@
     executable: /bin/bash
 
 - name: Start the application in background
-  shell: yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &
-  args:
-    chdir: '{{ app_dir }}'
+  shell: |
+    cd '{{ app_dir }}'
+    yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &
+  args:    
     executable: /bin/bash
 
+- name: Ensure Backstage starts successfully
+  block:
+    - name: Wait for Backstage Stack Up'
+      wait_for:
+        path: '{{ app_dir }}/yarn_dev.log'
+        search_regex: 'webpack compiled successfully'
+        timeout: 120  # 10 minutes
 
-# - name: Ensure Backstage starts successfully
-#   block:
-#     - name: Wait for Backstage Stack Up'
-#       wait_for:
-#         path: '{{ app_dir }}/yarn_dev.log'
-#         search_regex: 'webpack compiled successfully'
-#         timeout: 120  # 10 minutes
+    - name: Display success message
+      debug:
+        msg: "Backstage started successfully!"
 
-#     - name: Display success message
-#       debug:
-#         msg: "Backstage started successfully!"
-
-#   rescue:
-#     - name: Display failure message
-#       debug:
-#         msg: "Backstage did not start successfully within the given time."
+  rescue:
+    - name: Display failure message
+      debug:
+        msg: "Backstage did not start successfully within the given time."

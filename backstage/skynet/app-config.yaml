@@ -1,8 +1,6 @@
 app:
   title: Backstage Skynet
-  baseUrl: http://0.0.0.0:3000  
-    #port: 3000
-    #host: 192.168.0.150
+  baseUrl: http://0.0.0.0:3000      
 
 organization:
   name: Skynet Portal
@@ -38,19 +36,7 @@ backend:
       port: ${POSTGRES_PORT}
       user: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}        
-    # plugin:
-    #   catalog:
-    #     connection:
-    #       database: backstage_db
-    #   auth:
-    #     connection:
-    #       database: backstage_db
-    #   app:
-    #     connection:
-    #       database: backstage_db
-    #   scaffolder:
-    #     connection:
-    #       database: backstage_db
+
 cache:
   store: redis
   connection: 'redis://${REDIS_USER}:${REDIS_PASSWD}@localhost:6379'            

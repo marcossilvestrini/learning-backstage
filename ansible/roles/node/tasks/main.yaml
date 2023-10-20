@@ -3,6 +3,7 @@
   register: node_version_output
   changed_when: false
   ignore_errors: true
+  no_log: true
 
 - name: Define node_version based on node_version_output
   set_fact:
@@ -51,6 +52,7 @@
   register: yarn_version_output
   changed_when: false
   ignore_errors: true
+  no_log: true
 
 - name: Define yarn_version based on yarn_version_output
   set_fact:
@@ -113,7 +115,7 @@
     msg: "Yarn version is {{ yarn_version_after_install | default(yarn_version | default('Not installed')) }}"
 
 
-######################## Instal yarn latest ######################
+######################## Instal yarn berry ######################
 # - name: Check yarn version
 #   command: yarn -v
 #   register: yarn_version_output
