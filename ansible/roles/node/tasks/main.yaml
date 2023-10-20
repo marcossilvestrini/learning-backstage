@@ -14,30 +14,30 @@
   yum_repository:
     name: nodesource
     description: Node.js official repository
-    baseurl: https://rpm.nodesource.com/pub_20.x/el/$releasever/$basearch/
+    baseurl: https://rpm.nodesource.com/pub_18.x/el/$releasever/$basearch/
     gpgkey: https://rpm.nodesource.com/pub/el/NODESOURCE-GPG-SIGNING-KEY-EL
     gpgcheck: yes
     enabled: yes  
-  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('20', '<'))
+  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('18', '<'))
 
 - name: Install Node.js
   become: true
   yum:
     name: nodejs
     state: latest
-  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('20', '<'))
+  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('18', '<'))
 
 - name: Check node version after installation
   command: node -v
   register: node_version_after_install_output
   changed_when: false
-  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('20', '<'))
+  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('18', '<'))
 
 - name: Define node_version_after_install based on node_version_after_install_output
   set_fact:
     node_version_after_install: "{{ (node_version_after_install_output.stdout[1:] if node_version_after_install_output.stdout.startswith('v') else node_version_after_install_output.stdout) | default('') }}"
   changed_when: false
-  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('20', '<'))
+  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('18', '<'))
 
 - name: Display node version
   debug:
