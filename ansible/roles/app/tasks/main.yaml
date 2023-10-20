@@ -85,7 +85,9 @@
 - name: Start the application in background
   shell: |
     cd '{{ app_dir }}'
-    yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &
+    source .env
+    #LOG_LEVEL=debug yarn dev
+    LOG_LEVEL=debug yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &
   args:    
     executable: /bin/bash
 
