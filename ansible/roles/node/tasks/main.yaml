@@ -1,12 +1,3 @@
-- name: Ensure curl and required tools are installed
-  become: true
-  yum:
-    name:
-      - curl
-      - gcc-c++
-      - make
-    state: present
-
 - name: Check node version
   command: node -v
   register: node_version_output
@@ -23,35 +14,38 @@
   yum_repository:
     name: nodesource
     description: Node.js official repository
-    baseurl: https://rpm.nodesource.com/pub_16.x/el/$releasever/$basearch/
+    baseurl: https://rpm.nodesource.com/pub_20.x/el/$releasever/$basearch/
     gpgkey: https://rpm.nodesource.com/pub/el/NODESOURCE-GPG-SIGNING-KEY-EL
     gpgcheck: yes
     enabled: yes  
-  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('16', '<'))
+  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('20', '<'))
 
 - name: Install Node.js
   become: true
   yum:
     name: nodejs
     state: latest
-  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('16', '<'))
+  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('20', '<'))
 
 - name: Check node version after installation
   command: node -v
   register: node_version_after_install_output
   changed_when: false
-  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('16', '<'))
+  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('20', '<'))
 
 - name: Define node_version_after_install based on node_version_after_install_output
   set_fact:
     node_version_after_install: "{{ (node_version_after_install_output.stdout[1:] if node_version_after_install_output.stdout.startswith('v') else node_version_after_install_output.stdout) | default('') }}"
   changed_when: false
-  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('16', '<'))
+  when: node_version_output.rc != 0 or (node_version != '' and node_version is version('20', '<'))
 
 - name: Display node version
   debug:
     msg: "Node version is {{ node_version_after_install | default(node_version | default('Not installed.')) }}"
- 
+
+
+##################### Install yarn 1xx version####################
+
 - name: Check yarn version
   command: yarn -v
   register: yarn_version_output
@@ -71,28 +65,37 @@
 
 - name: Define latest_yarn_version based on latest_yarn_version_output
   set_fact:
-    latest_yarn_version: "{{ latest_yarn_version_output.stdout[1:] }}"
+    latest_yarn_version: "{{ latest_yarn_version_output.stdout.replace('v', '') }}"
   changed_when: false
 
-- name: Add Yarn yum repository
+- name: Print the value of latest_yarn_version
+  debug:
+    msg: "The value of latest_yarn_version is: {{ latest_yarn_version }}"
+
+- name: Remove existing /usr/bin/yarn
   become: true
-  yum_repository:
-    name: yarn
-    description: Yarn Repository
-    baseurl: https://dl.yarnpkg.com/rpm/
-    gpgkey: https://dl.yarnpkg.com/rpm/pubkey.gpg
-    gpgcheck: yes
-    enabled: yes
+  file:
+    path: /usr/bin/yarn
+    state: absent
   when: yarn_version_output.rc != 0 or yarn_version == '0.0.0' or yarn_version != latest_yarn_version
 
-- name: Install Yarn
+- name: Remove existing /usr/bin/yarnpkg
   become: true
-  yum:
-    name: yarn
-    state: latest
+  file:
+    path: /usr/bin/yarnpkg
+    state: absent
+  when: yarn_version_output.rc != 0 or yarn_version == '0.0.0' or yarn_version != latest_yarn_version
+
+- name: Install latest Yarn version
+  become: true
+  command: "npm install -g yarn@{{ latest_yarn_version }}"
+  when: yarn_version_output.rc != 0 or yarn_version == '0.0.0' or yarn_version != latest_yarn_version
+
+- name: Set Yarn global folder
+  become: true
+  shell: "yarn config set prefix ~/.yarn"
   when: yarn_version_output.rc != 0 or yarn_version == '0.0.0' or yarn_version != latest_yarn_version
   
-
 - name: Check yarn version after installation
   command: yarn -v
   register: yarn_version_after_install_output
@@ -110,3 +113,50 @@
     msg: "Yarn version is {{ yarn_version_after_install | default(yarn_version | default('Not installed')) }}"
 
 
+######################## Instal yarn latest ######################
+# - name: Check yarn version
+#   command: yarn -v
+#   register: yarn_version_output
+#   changed_when: false
+#   ignore_errors: true
+
+# - name: Define yarn_version based on yarn_version_output
+#   set_fact:
+#     yarn_version: "{{ yarn_version_output.stdout | default('0.0.0') }}"
+#   changed_when: false
+
+# - name: Get latest Yarn Berry version from GitHub
+#   shell: "curl -s https://api.github.com/repos/yarnpkg/berry/releases/latest | jq -r .tag_name"
+#   register: latest_yarn_version_output
+#   changed_when: false
+#   ignore_errors: true
+
+# - name: Define latest_yarn_version based on latest_yarn_version_output
+#   set_fact:
+#     latest_yarn_version: "{{ latest_yarn_version_output.stdout.split('/')[-1] }}"
+#   changed_when: false
+
+# - name: Print the value of latest_yarn_version
+#   debug:
+#     msg: "The value of latest_yarn_version is: {{ latest_yarn_version }}"
+
+# - name: Install latest Yarn Berry version
+#   become: true
+#   command: "npm install -g yarn@berry"
+#   when: yarn_version_output.rc != 0 or yarn_version == '0.0.0' or yarn_version != latest_yarn_version
+  
+# - name: Check yarn version after installation
+#   command: yarn -v
+#   register: yarn_version_after_install_output
+#   changed_when: false
+#   when: yarn_version_output.rc != 0 or yarn_version == '0.0.0' or yarn_version != latest_yarn_version
+
+# - name: Define yarn_version_after_install based on yarn_version_after_install_output
+#   set_fact:
+#     yarn_version_after_install: "{{ yarn_version_after_install_output.stdout | default('0.0.0') }}"
+#   changed_when: false
+#   when: yarn_version_output.rc != 0 or yarn_version == '0.0.0' or yarn_version != latest_yarn_version
+
+# - name: Display yarn version
+#   debug:
+#     msg: "Yarn version is {{ yarn_version_after_install | default(yarn_version | default('Not installed')) }}"

@@ -24,3 +24,5 @@ packages:
   - yum-utils
   - rsync
   - expect
+  - gcc-c++
+  - make
