@@ -3,6 +3,7 @@
   become: true    
   register: directory_check
   ignore_errors: true
+  no_log: true
 
 - name: Create '{{ app_dir }}' directory
   command: mkdir -p '{{ app_dir }}'
@@ -60,11 +61,42 @@
   become: true
   ignore_errors: true  # Assuming it's okay if no process is found
 
-# - name: Start the application in background
-#   shell: source {{ ansible_env.HOME }}/.bashrc && yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &
+# - name: List files in app_dir
+#   shell: ls -lt
 #   args:
 #     chdir: '{{ app_dir }}'
 #     executable: /bin/bash
+#   register: ls_output
+
+# - name: Display ls_output
+#   debug:
+#     var: ls_output.stdout_lines
+
+# - name: Display app_dir
+#   debug:
+#     var: app_dir
+
+# - name: Start the application in background
+#   shell: |
+#     source {{ ansible_env.HOME }}/.bashrc     
+#     yarn install
+#     yarn dev #> '{{ app_dir }}/yarn_dev.log' 2>&1 &  
+#   args:
+#     chdir: '{{ app_dir }}'
+#     executable: /bin/bash
+
+- name: Install dependencies
+  shell: yarn install
+  args:
+    chdir: '{{ app_dir }}'
+    executable: /bin/bash
+
+- name: Start the application in background
+  shell: yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &
+  args:
+    chdir: '{{ app_dir }}'
+    executable: /bin/bash
+
 
 # - name: Ensure Backstage starts successfully
 #   block:
