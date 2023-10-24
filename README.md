@@ -20,6 +20,10 @@
 
 ## Configure Postgresql
 
+## Install plugins
+
+
+
 ### Set your .env variables
 
 ```sh
