@@ -12,17 +12,21 @@
 
 ## Official Documentation
 
-<https://backstage.io/docs/overview/what-is-backstage>
+[Official Documentation](https://backstage.io/docs/overview/what-is-backstage>)
 
 ## Get Started
 
+[Backstage Tutorial](https://backstage.io/docs/getting-started/)
 [Spotify Tutorial](https://backstage.spotify.com/blog/introducing-backstage-learn)
 
 ## Configure Postgresql
 
 ## Install plugins
 
-
+```sh
+# From your Backstage root directory
+yarn add --cwd packages/backend pg
+```
 
 ### Set your .env variables
 
@@ -58,4 +62,13 @@ backend:
       scaffolder:
         connection:
           database: backstage_db
+```
+
+## Access Backstage remotely
+
+```ssh
+# Create ssh tunel
+ssh -L 3000:localhost:3000 -L 7007:localhost:7007 vagrant@192.168.0.150
+# Access in browser
+http://localhost:3000
 ```

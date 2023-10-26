@@ -1,7 +1,7 @@
 server {
     listen 80;
     server_name {{ server_name }};
-
+    
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -9,11 +9,23 @@ server {
         proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header Origin $http_origin;
-        proxy_set_header Referer $http_referer;
-        proxy_set_header Referrer-Policy $http_referrer_policy;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Cabeçalhos CORS
+        add_header 'Access-Control-Allow-Origin' '*'; # Permite qualquer origem. Modifique conforme necessário.
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+        add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+        add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+
+        # Responde '200 OK' para requisições 'OPTIONS' (pre-flight)
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+        
     }
 
     location /api {
@@ -23,23 +35,48 @@ server {
         proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header Origin $http_origin;
-        proxy_set_header Referer $http_referer;
-        proxy_set_header Referrer-Policy $http_referrer_policy;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-    location /ws {
+
+        # Cabeçalhos CORS
+        add_header 'Access-Control-Allow-Origin' '*'; # Permite qualquer origem. Modifique conforme necessário.
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+        add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+        add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+
+        # Responde '200 OK' para requisições 'OPTIONS' (pre-flight)
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+        
+    }        
+
+    location /wss {
         proxy_pass http://localhost:7007;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header Origin $http_origin;
-        proxy_set_header Referer $http_referer;
-        proxy_set_header Referrer-Policy $http_referrer_policy;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Cabeçalhos CORS
+        add_header 'Access-Control-Allow-Origin' '*'; # Permite qualquer origem. Modifique conforme necessário.
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+        add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+        add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+
+        # Responde '200 OK' para requisições 'OPTIONS' (pre-flight)
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+        
     }
 }

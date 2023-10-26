@@ -35,6 +35,7 @@ import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import { gitlabAuthApiRef } from '@backstage/core-plugin-api';
 import { SignInPage } from '@backstage/core-components';
 
 const app = createApp({
@@ -50,6 +51,12 @@ const app = createApp({
             title: 'GitHub',
             message: 'Sign in using GitHub',
             apiRef: githubAuthApiRef,
+          },
+          {
+            id: 'gitlab-auth-provider',
+            title: 'Gitlab',
+            message: 'Sign in using GitLab',
+            apiRef: gitlabAuthApiRef,
           },
         ]}
       />
