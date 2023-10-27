@@ -10,9 +10,10 @@
 
 # Learning Backstage
 
-## Official Documentation
+## Docs
 
 [Official Documentation](https://backstage.io/docs/overview/what-is-backstage>)
+[Auth](https://github.com/RoadieHQ/backstage-auth-example/blob/main/README.md)
 
 ## Get Started
 
@@ -76,7 +77,7 @@ If you use nginx proxy, this is example:
 
 http://backstage.skynet.com.br
 
-http://backstage.skynet.com.br/api/auth/github/handler/frame.
+http://backstage.skynet.com.br/api/auth/github/handler/frame
 
 Enable device flow option
 
@@ -112,6 +113,7 @@ const app = createApp({
 #### Configure app
 
 ```yaml
+...
 enableExperimentalRedirectFlow: true
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers  
@@ -123,7 +125,7 @@ auth:
         clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}  
 ```
 
-#### Configure .env
+#### Configure .env with github secret
 
 ```env
 export AUTH_GITHUB_CLIENT_ID="fobarbeer"
@@ -137,6 +139,96 @@ http://backstage.skynet.com.br:7007/api/auth/github/start?env=development
 ```
 
 ### Gitlab
+
+#### Create gitlab Application
+
+![gitlab](https://github.com/RoadieHQ/backstage-auth-example/raw/gitlab/docs/static/gitlab_auth_setup.png)
+
+If you use nginx proxy, this is example:
+
+http://backstage.skynet.com.br/api/auth/github/handler/frame
+
+#### Configure frontend
+
+*packages\app\src\App.tsx*
+
+```ts
+import { gitlabAuthApiRef } from '@backstage/core-plugin-api';
+import { SignInPage } from '@backstage/core-components';
+
+...
+const app = createApp({
+  apis,
+  components: {
+    SignInPage: props => (
+      <SignInPage
+        {...props}
+        providers={[
+          'guest',
+          {
+            id: 'gitlab-auth-provider',
+            title: 'Gitlab',
+            message: 'Sign in using Gitlab',
+            apiRef: gitlabAuthApiRef,
+          },          
+        ]}
+      />
+    ),
+  },
+```
+
+#### Configure backend
+
+*packages\backend\src\plugins\auth.ts*
+
+```ts
+...
+providerFactories: {
+      ...defaultAuthProviderFactories,     
+      gitlab: providers.gitlab.create({
+        signIn: {
+          resolver(_, ctx) {
+            const userRef = 'user:default/guest'; // Must be a full entity reference
+            return ctx.issueToken({
+              claims: {
+                sub: userRef, // The user's own identity
+                ent: [userRef], // A list of identities that the user claims ownership through
+              },
+            });
+          },
+          // resolver: providers.github.resolvers.usernameMatchingUserEntityName(),
+        },
+      }),     
+    },
+```
+
+#### Configure app
+
+```yaml
+...
+enableExperimentalRedirectFlow: true
+auth:
+  # see https://backstage.io/docs/auth/ to learn about auth providers  
+  environment: development  
+  providers:
+    gitlab:      
+      development:
+        clientId: ${AUTH_GITLAB_CLIENT_ID}
+        clientSecret: ${AUTH_GITLAB_CLIENT_SECRET}
+        ## uncomment if using a custom redirect URI      
+        callbackUrl: http://backstage.skynet.com.br/api/auth/gitlab/handler/frame
+        ## uncomment if using self-hosted GitLab
+        # audience: https://gitlab.company.com
+        # audience : https://gitlab.com        
+```
+
+#### Configure .env with gitlab secrets
+
+```env
+export GITLAB_BASE_URL=https://gitlab.com
+export AUTH_GITLAB_CLIENT_ID=foobarbeer
+export AUTH_GITLAB_CLIENT_SECRET=foobarbeer
+```
 
 #### Test gitlab callback
 
