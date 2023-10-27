@@ -89,6 +89,7 @@ auth:
       development:
         clientId: ${AUTH_GITLAB_CLIENT_ID}
         clientSecret: ${AUTH_GITLAB_CLIENT_SECRET}
+        callbackUrl: http://backstage.skynet.com.br/api/auth/gitlab/handler/frame
         ## uncomment if using self-hosted GitLab
         # audience: https://gitlab.company.com
         ## uncomment if using a custom redirect URI      
