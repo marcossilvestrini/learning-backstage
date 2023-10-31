@@ -75,9 +75,9 @@ backend:
 
 If you use nginx proxy, this is example:
 
-http://backstage.skynet.com.br
+<http://backstage.skynet.com.br>
 
-http://backstage.skynet.com.br/api/auth/github/handler/frame
+<http://backstage.skynet.com.br/api/auth/github/handler/frame>
 
 Enable device flow option
 
@@ -146,7 +146,7 @@ http://backstage.skynet.com.br:7007/api/auth/github/start?env=development
 
 If you use nginx proxy, this is example:
 
-http://backstage.skynet.com.br/api/auth/github/handler/frame
+<http://backstage.skynet.com.br/api/auth/github/handler/frame>
 
 #### Configure frontend
 
@@ -204,6 +204,8 @@ providerFactories: {
 
 #### Configure app
 
+*app.config.yaml*
+
 ```yaml
 ...
 enableExperimentalRedirectFlow: true
@@ -234,6 +236,149 @@ export AUTH_GITLAB_CLIENT_SECRET=foobarbeer
 
 ```html
 http://backstage.skynet.com.br:7007/api/auth/gitlab/start?env=development
+```
+
+## Configure gitlab Integration
+
+### Create gitlab token
+
+![gitlabtoken](images/gitlabtoken.png)
+
+### Install gitlab plugins
+
+From your Backstage root directory:
+
+```sh
+#yarn clean cache
+yarn --cwd packages/app add @immobiliarelabs/backstage-plugin-gitlab
+yarn --cwd packages/backend add @immobiliarelabs/backstage-plugin-gitlab-backend
+#yarn install
+```
+
+### Add a new GitLab tab to the entity page
+
+*packages/app/src/components/catalog/EntityPage.tsx*
+
+```ts
+import {
+    isGitlabAvailable,
+    EntityGitlabContent,
+    EntityGitlabLanguageCard,
+    EntityGitlabMergeRequestsTable,
+    EntityGitlabMergeRequestStatsCard,
+    EntityGitlabPeopleCard,
+    EntityGitlabPipelinesTable,
+    EntityGitlabReadmeCard,
+    EntityGitlabReleasesCard,
+} from '@immobiliarelabs/backstage-plugin-gitlab';
+
+// Farther down at the serviceEntityPage declaration
+const serviceEntityPage = (
+    <EntityLayout>
+      //...
+      <EntityLayout.Route if={isGitlabAvailable} path="/gitlab" title="Gitlab">
+        <EntityGitlabContent />
+      </EntityLayout.Route>
+      //...     
+    </EntityLayout>
+);
+
+const overviewContent = (
+    <Grid container spacing={3} alignItems="stretch">
+      <EntitySwitch>
+        <EntitySwitch.Case if={isGitlabAvailable}>
+          <Grid item md={12}>
+            <EntityGitlabReadmeCard />
+          </Grid>
+          <Grid item sm={12} md={3} lg={3}>
+            <EntityGitlabPeopleCard />
+          </Grid>
+          <Grid item sm={12} md={3} lg={3}>
+            <EntityGitlabLanguageCard />
+          </Grid>
+          <Grid item sm={12} md={3} lg={3}>
+            <EntityGitlabMergeRequestStatsCard />
+          </Grid>
+          <Grid item sm={12} md={3} lg={3}>
+            <EntityGitlabReleasesCard />
+          </Grid>
+          <Grid item md={12}>
+            <EntityGitlabPipelinesTable />
+          </Grid>
+          <Grid item md={12}>
+            <EntityGitlabMergeRequestsTable />
+          </Grid>
+        </EntitySwitch.Case>
+      </EntitySwitch>
+    </Grid>
+);
+```
+
+### Add the integration for gitlab
+
+*app-config.yaml*
+
+```yaml
+integrations:
+    gitlab:
+        - host: gitlab.com
+          token: ${GITLAB_TOKEN}
+```
+
+### Add the GitLab Filler Processor
+
+This allows auto-filling of the annotations like the project id and slug
+
+*packages/backend/src/plugins/catalog.ts*
+
+```ts
+import { GitlabFillerProcessor } from '@immobiliarelabs/backstage-plugin-gitlab-backend';
+
+export default async function createPlugin(
+    env: PluginEnvironment
+): Promise<Router> {
+    const builder = await CatalogBuilder.create(env);
+    //...
+    // Add this line
+    builder.addProcessor(new GitlabFillerProcessor(env.config));
+    //...
+    const { processingEngine, router } = await builder.build();
+    await processingEngine.start();
+    return router;
+}
+```
+
+### Add the gitlab route 
+
+*packages/backend/src/plugins/gitlab.ts*
+
+```ts
+import { PluginEnvironment } from '../types';
+import { Router } from 'express-serve-static-core';
+import { createRouter } from '@immobiliarelabs/backstage-plugin-gitlab-backend';
+
+export default async function createPlugin(
+    env: PluginEnvironment
+): Promise<Router> {
+    return createRouter({
+        logger: env.logger,
+        config: env.config,
+    });
+}
+```
+
+*packages/backend/src/index.ts*
+
+```ts
+import gitlab from './plugins/gitlab';
+
+async function main() {
+    //...
+    const gitlabEnv = useHotMemoize(module, () => createEnv('gitlab'));
+    //...
+    apiRouter.use('/gitlab', await gitlab(gitlabEnv));
+    //...
+}
 ```
 
 ## Access Backstage remotely
