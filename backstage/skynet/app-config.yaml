@@ -101,7 +101,10 @@ auth:
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
 
+# https://backstage.io/docs/features/software-catalog/configuration/
 catalog:
+  orphanStrategy: delete
+  processingInterval: { seconds: 10 }
   import:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
@@ -113,8 +116,14 @@ catalog:
       target: ../../examples/entities.yaml
 
     # Local example template
-    - type: file
-      target: ../../examples/template/template.yaml
+    # - type: file
+    #   target: ../../examples/template/template.yaml
+    #   rules:
+    #     - allow: [Template]
+
+    # Gitlab templates
+    - type: url
+      target: https://gitlab.com/silvestrini-skynet/backstage/templates/blob/main/template.yaml?
       rules:
         - allow: [Template]
 

@@ -11,12 +11,12 @@ MULTILINE-COMMENT
 export LANG=C
 
 # Set working directory
-WORKDIR=/home/vagrant
-cd "$WORKDIR" || exit
+#WORKDIR=/home/vagrant
+#cd "$WORKDIR" || exit
 
 # Set syn script
 if [ ! -f "/bin/bash /usr/local/bin/sync_script.sh" ]; then
-  sudo cp scripts/sync_script.sh /usr/local/bin
+  sudo cp /home/vagrant/scripts/sync_script.sh /usr/local/bin
   sudo chown vagrant:vagrant /usr/local/bin/sync_script.sh
   chmod +x /usr/local/bin/sync_script.sh    
 fi

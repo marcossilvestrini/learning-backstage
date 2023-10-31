@@ -37,11 +37,15 @@
   with_items: "{{ found_files.files }}"
   no_log: true
 
-- name: Install dependencies with Yarn
-  shell: source "{{ ansible_env.HOME }}/.bashrc" && cd '{{ app_dir }}'  && yarn install && yarn cache clean
-  args:    
-    executable: /bin/bash
+- name: Install dependencies
+  ansible.builtin.shell: |
+    yarn --cwd packages/app add @immobiliarelabs/backstage-plugin-gitlab
+    yarn --cwd packages/backend add @immobiliarelabs/backstage-plugin-gitlab-backend
+    yarn install
+    yarn cache clean
+  args:
     chdir: '{{ app_dir }}'
+    executable: /bin/bash
 
 - name: Synchronize files to '{{ app_scaff }}'
   synchronize:
@@ -62,34 +66,27 @@
   ignore_errors: true  # Assuming it's okay if no process is found
 
 # - name: List files in app_dir
-#   shell: ls -lt
+#   ansible.builtin.shell: ls -lt
 #   args:
 #     chdir: '{{ app_dir }}'
 #     executable: /bin/bash
-#   register: ls_output
+#   register: app_path
 
-# - name: Display ls_output
+# - name: Display app_path
 #   debug:
-#     var: ls_output.stdout_lines
+#     var: app_path.stdout_lines
 
 # - name: Display app_dir
 #   debug:
 #     var: app_dir
 
-- name: Install dependencies
-  shell: yarn install
-  args:
-    chdir: '{{ app_dir }}'
-    executable: /bin/bash
-
-- name: Start the application in background
-  shell: |
-    cd '{{ app_dir }}'
-    source .env
-    #LOG_LEVEL=debug yarn dev
+- name: Start the application in background  
+  ansible.builtin.shell: |
+    source .env 
     LOG_LEVEL=debug yarn dev > '{{ app_dir }}/yarn_dev.log' 2>&1 &
   args:    
     executable: /bin/bash
+    chdir: '{{ app_dir }}'
 
 - name: Ensure Backstage starts successfully
   block:
