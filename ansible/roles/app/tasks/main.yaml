@@ -37,15 +37,50 @@
   with_items: "{{ found_files.files }}"
   no_log: true
 
+
 - name: Install dependencies
   ansible.builtin.shell: |
-    yarn --cwd packages/app add @immobiliarelabs/backstage-plugin-gitlab
-    yarn --cwd packages/backend add @immobiliarelabs/backstage-plugin-gitlab-backend
     yarn install
     yarn cache clean
   args:
     chdir: '{{ app_dir }}'
     executable: /bin/bash
+
+# Gitlab integration
+- name: Check if @immobiliarelabs/backstage-plugin-gitlab is installed
+  ansible.builtin.command:
+    cmd: "yarn --cwd packages/app list | grep @immobiliarelabs/backstage-plugin-gitlab"
+    chdir: '{{ app_dir }}'
+  register: gitlab_plugin_check
+  failed_when: false
+
+- name: Install @immobiliarelabs/backstage-plugin-gitlab if not installed
+  ansible.builtin.shell: |
+    yarn  --cwd packages/app add @immobiliarelabs/backstage-plugin-gitlab
+    yarn install 
+    yarn cache clean
+  args:
+    chdir: '{{ app_dir }}'
+    executable: /bin/bash
+  when: gitlab_plugin_check.rc != 0
+
+
+- name: Check if @immobiliarelabs/backstage-plugin-gitlab-backend is installed
+  ansible.builtin.command:
+    cmd: "yarn --cwd packages/app list | grep @immobiliarelabs/backstage-plugin-gitlab-backend"
+    chdir: '{{ app_dir }}'
+  register: gitlab_plugin_check
+  failed_when: false
+
+- name: Install @immobiliarelabs/backstage-plugin-gitlab-backend if not installed
+  ansible.builtin.shell: |
+    yarn  --cwd packages/app add @immobiliarelabs/backstage-plugin-gitlab-backend
+    yarn install 
+    yarn cache clean
+  args:
+    chdir: '{{ app_dir }}'
+    executable: /bin/bash
+  when: gitlab_plugin_check.rc != 0
 
 - name: Synchronize files to '{{ app_scaff }}'
   synchronize:
@@ -63,22 +98,7 @@
 - name: Kill any node processes
   command: pkill node
   become: true
-  ignore_errors: true  # Assuming it's okay if no process is found
-
-# - name: List files in app_dir
-#   ansible.builtin.shell: ls -lt
-#   args:
-#     chdir: '{{ app_dir }}'
-#     executable: /bin/bash
-#   register: app_path
-
-# - name: Display app_path
-#   debug:
-#     var: app_path.stdout_lines
-
-# - name: Display app_dir
-#   debug:
-#     var: app_dir
+  ignore_errors: true
 
 - name: Start the application in background  
   ansible.builtin.shell: |
