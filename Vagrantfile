@@ -7,9 +7,9 @@ Vagrant.configure("2") do |config|
   config.vbguest.no_install = true
   config.vbguest.no_remote = true
   config.vm.network "public_network", nic_type: "virtio", ip: "192.168.0.150", netmask: "255.255.255.0", mode: "bridge", bridge: [
-                      "Intel(R) I211 Gigabit Network Connection",
-                      "MediaTek Wi-Fi 6 MT7921 Wireless LAN",
-                    ]
+                                        "Intel(R) I211 Gigabit Network Connection",
+                                        "MediaTek Wi-Fi 6 MT7921 Wireless LAN",
+                                      ]
   config.vm.provider "virtualbox" do |vb|
     vb.linked_clone = true
     vb.name = "backstage"
@@ -22,14 +22,8 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder "security", "/home/vagrant/security"
   config.vm.synced_folder "backstage", "/home/vagrant/backstage"
   config.vm.synced_folder "ansible", "/home/vagrant/ansible"
-  # config.vm.provision "shell", name: "[SCRIPT CLOUD-INIT.SH]", path: "../scripts/cloud-init.sh"
-  # config.vm.provision "shell", name: "[SCRIPT NGINX.SH]", path: "../scripts/nginx.sh"
-  # config.vm.provision "shell", name: "[SCRIPT POSTGRESQL.SH]", path: "../scripts/postgresql.sh"
-  # config.vm.provision "shell", name: "[SCRIPT REDIS.SH]", path: "../scripts/redis.sh"
-  # config.vm.provision "shell", name: "[SCRIPT BACKSTAGE.SH]", privileged: false, path: "../scripts/backstage.sh"
-  # config.vm.provision "shell", name: "[SCRIPT SYNC-BACKSTAGE.SH]", privileged: false, path: "../scripts/sync-backstage.sh"
 
-  # Configure o provisionamento com Ansible
+  Configure o provisionamento com Ansible
   config.vm.provision "ansible_local" do |ansible|
     ansible.install_mode = "pip3"
     ansible.compatibility_mode = "2.0"
@@ -37,5 +31,12 @@ Vagrant.configure("2") do |config|
     ansible.provisioning_path = "/home/vagrant/ansible"
     ansible.inventory_path = "hosts"
     ansible.playbook = "playbook.yaml"
+  end
+
+  # Copy private key to connect ssh
+  script_path = File.expand_path("../scripts/copy-key.ps1", __FILE__)
+  is_up_or_provisioning = ARGV.any? { |arg| arg == "up" || arg == "provision" }
+  if Vagrant::Util::Platform.windows? && is_up_or_provisioning
+    `powershell -ExecutionPolicy Bypass -File #{script_path}`
   end
 end
