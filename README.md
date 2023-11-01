@@ -381,6 +381,38 @@ async function main() {
 }
 ```
 
+## Build Docker Image
+
+### Gitlab ci
+
+```yaml
+# Build Backstage
+image: node:18
+
+stages:
+  - build
+
+cache:
+  paths:
+    - node_modules/
+
+before_script:
+  - yarn install --frozen-lockfile
+
+build_backstage:
+  stage: build
+  script:
+    - yarn tsc
+    - yarn build:backend --config ../../app-config.yaml
+  artifacts:
+    paths:
+      - packages/backend/dist/
+  rules:
+      - if: '$CI_PIPELINE_SOURCE == "push"'
+        when: always
+      - when: manual
+```
+
 ## Access Backstage remotely
 
 ```ssh

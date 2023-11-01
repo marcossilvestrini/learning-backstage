@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder "backstage", "/home/vagrant/backstage"
   config.vm.synced_folder "ansible", "/home/vagrant/ansible"
 
-  #Configure o provisionamento com Ansible
+  # Configure o provisionamento com Ansible
   config.vm.provision "ansible_local" do |ansible|
     ansible.install_mode = "pip3"
     ansible.compatibility_mode = "2.0"

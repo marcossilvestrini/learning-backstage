@@ -46,6 +46,24 @@
     chdir: '{{ app_dir }}'
     executable: /bin/bash
 
+- name: Check if backstage-cli is available
+  ansible.builtin.shell: |
+    yarn global list --pattern @backstage/cli --depth=0
+  args:
+    chdir: '{{ app_dir }}'
+    executable: /bin/bash
+  register: backstage_cli_check
+  changed_when: '"@backstage/cli" not in backstage_cli_check.stdout'
+  failed_when: false
+
+- name: Install backstage-cli globally
+  ansible.builtin.shell: |
+    yarn global add @backstage/cli
+  args:
+    chdir: '{{ app_dir }}'
+    executable: /bin/bash
+  when: '"@backstage/cli" not in backstage_cli_check.stdout'
+
 # Gitlab integration
 - name: Check if @immobiliarelabs/backstage-plugin-gitlab is installed
   ansible.builtin.command:
@@ -119,7 +137,6 @@
     - name: Display success message
       debug:
         msg: "Backstage started successfully!"
-
   rescue:
     - name: Display failure message
       debug:

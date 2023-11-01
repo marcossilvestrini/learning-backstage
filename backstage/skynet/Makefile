@@ -23,7 +23,7 @@ tsc: ## Compile TypeScript code
 	yarn tsc
 
 tsc-full: ## Compile TypeScript code with full checks
-	tsc --skipLibCheck false --incremental false
+	yarn tsc --skipLibCheck false --incremental false
 
 clean: ## Clean repo using backstage-cli
 	yarn backstage-cli repo clean
@@ -35,7 +35,7 @@ test-all: ## Run all tests with coverage
 	yarn backstage-cli repo test --coverage
 
 test-e2e: ## Run end-to-end tests
-	playwright test
+	yarn playwright test
 
 fix: ## Fix repo using backstage-cli
 	yarn backstage-cli repo fix
@@ -47,7 +47,10 @@ lint-all: ## Lint entire codebase
 	yarn backstage-cli repo lint
 
 prettier-check: ## Check code format using prettier
-	prettier --check .
+	yarn prettier --check .
+
+prettier-fix: ## Fix code format using prettier
+	yarn prettier --write .
 
 new: ## Create a new component with internal scope
 	yarn backstage-cli new --scope internal
@@ -56,4 +59,4 @@ help: ## Display this help
 	@echo "Usage: make [TARGET]\nTargets:"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-18s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-.PHONY: dev start start-backend build-backend build-all build-image tsc tsc-full clean test test-all test-e2e fix lint lint-all prettier-check new help
+.PHONY: dev start start-backend build-backend build-all build-image tsc tsc-full clean test test-all test-e2e fix lint lint-all prettier-check prettier-fix new help
