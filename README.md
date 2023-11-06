@@ -413,6 +413,10 @@ build_backstage:
       - when: manual
 ```
 
+### Pull image
+
+docker pull mrsilvestrini/backstage
+
 ## Access Backstage remotely
 
 ```ssh

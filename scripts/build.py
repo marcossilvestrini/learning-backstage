@@ -20,7 +20,7 @@ def main():
     execute_command("git add .", DEST_DIR)
 
     # Commitar as mudanças
-    commit_message = "💚 upd: sync repository for build"
+    commit_message = "💚upd: sync repository for build"
     execute_command(f'git commit -m "{commit_message}"', DEST_DIR)
 
     # Push para o repositório remoto
