@@ -24,6 +24,7 @@ backend:
     connect-src: ["'self'", 'http:', 'https:']
     # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
     # Default Helmet Content-Security-Policy values can be removed by setting the key to false
+    img-src: ["'self'", 'data:', 'https://ca.slack-edge.com']
   cors:
     origin: http://backstage.skynet.com.br
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
