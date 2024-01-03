@@ -1,0 +1,18 @@
+apiVersion: v2
+name: postgresql-cluster
+description: A Helm chart for Kubernetes PostgreSQL Database Cluster
+home: https://gitlab.luizalabs.com/magalu-cloud-iaas/infrastructure/solutions/cluster-ms-dev
+keywords:
+  - postgresql
+  - pg
+  - cncf
+kubeVersion: '>= 1.19.0-0'
+maintainers:
+  - name: SRE Solutions
+    url: https://gitlab.luizalabs.com/magalu-cloud-iaas/infrastructure/solutions
+type: application
+sources:
+  - https://gitlab.luizalabs.com/magalu-cloud-iaas/infrastructure/solutions/cluster-ms-dev/charts
+  - https://gitlab.luizalabs.com/magalu-cloud-iaas/infrastructure/solutions/cluster-ms-dev
+icon: file://postgresql-cluster.png
+version: 1.0.0

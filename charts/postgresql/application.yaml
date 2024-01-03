@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgresql-dev
+  namespace: argocd
+spec:
+  destination:
+    namespace: backstage
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    helm:
+      ignoreMissingValueFiles: true
+      valueFiles:
+      - '../helm/postgresql/values.yaml'
+    path: stage/manifests/argocd/postgresql
+    repoURL: https://gitlab.luizalabs.com/magalu-cloud-iaas/infrastructure/solutions/backstage/backstage-server.git
+    targetRevision: HEAD
+  syncPolicy: {}

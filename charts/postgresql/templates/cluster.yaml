@@ -1,0 +1,86 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ .Values.cluster.name }}
+spec:
+  description: "{{ .Values.cluster.description }}"
+  imageName: {{ .Values.cluster.imageName }}
+  instances: {{ .Values.cluster.instances }}
+  startDelay: {{ .Values.cluster.startDelay }}
+  stopDelay: {{ .Values.cluster.stopDelay }}
+  primaryUpdateStrategy: {{ .Values.cluster.primaryUpdateStrategy }}
+
+  postgresql:
+    parameters:
+      shared_buffers: {{ .Values.cluster.postgresqlParameters.shared_buffers | quote }}
+      pg_stat_statements.max: {{ .Values.cluster.postgresqlParameters.pg_stat_statements_max | quote }}
+      pg_stat_statements.track: {{ .Values.cluster.postgresqlParameters.pg_stat_statements_track | quote }}
+      auto_explain.log_min_duration: {{ .Values.cluster.postgresqlParameters.auto_explain_log_min_duration | quote }}      
+      max_worker_processes: {{ .Values.cluster.postgresqlParameters.max_worker_processes | quote }}
+      max_connections: {{ .Values.cluster.postgresqlParameters.max_connections | quote }}
+      shared_buffers: {{ .Values.cluster.postgresqlParameters.shared_buffers | quote }}
+      work_mem: {{ .Values.cluster.postgresqlParameters.work_mem | quote }}
+      effective_cache_size: {{ .Values.cluster.postgresqlParameters.effective_cache_size | quote }}
+
+    pg_hba:
+      - {{ .Values.cluster.pgHba | join "\n      - " }}
+
+  bootstrap:
+    initdb:
+      database: {{ .Values.cluster.bootstrap.database | quote }}
+      owner: {{ .Values.cluster.bootstrap.owner | quote }}
+      secret:
+        name: {{ .Values.cluster.bootstrap.secretPostgresUser | quote }}
+    # Alternative bootstrap method: start from a backup
+    #recovery:
+    #  backup:
+    #    name: backup-example
+  
+  enableSuperuserAccess: {{ .Values.cluster.enableSuperuserAccess }}
+  superuserSecret:
+    name: {{ .Values.cluster.secretSuperuser | quote }}
+
+  storage:
+    storageClass: {{ .Values.cluster.storageClass | quote }}
+    size: {{ .Values.cluster.size | quote }}
+
+  {{- if and .Values.backup.barmanObjectStore.destinationPath .Values.backup.barmanObjectStore.endpointURL }}
+  backup:
+    barmanObjectStore:
+      destinationPath: {{ .Values.backup.barmanObjectStore.destinationPath | quote }}
+      endpointURL: {{ .Values.backup.barmanObjectStore.endpointURL | quote }}
+      s3Credentials:
+        accessKeyId:
+          name: {{ include "postgresql-operator.backupCredsSecret" . }}
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: {{ include "postgresql-operator.backupCredsSecret" . }}
+          key: ACCESS_SECRET_KEY
+      wal:
+        compression: {{ .Values.backup.barmanObjectStore.wal.compression | quote }}
+        encryption: {{ .Values.backup.barmanObjectStore.wal.encryption | quote }}
+      data:
+        compression: {{ .Values.backup.barmanObjectStore.data.compression | quote }}
+        encryption: {{ .Values.backup.barmanObjectStore.data.encryption | quote }}
+        immediateCheckpoint: {{ .Values.backup.barmanObjectStore.data.immediateCheckpoint }}
+        jobs: {{ .Values.backup.barmanObjectStore.data.jobs }}
+  {{- end }}
+
+  resources:
+    requests:
+      memory: {{ .Values.requests.memory }}
+      cpu: {{ .Values.requests.cpu }}
+    limits:
+      memory: {{ .Values.limits.memory }}
+      cpu: {{ .Values.limits.cpu }}
+
+  affinity:
+    enablePodAntiAffinity: {{ .Values.enablePodAntiAffinity }}
+    topologyKey: {{ .Values.topologyKey | quote }}
+  
+  nodeMaintenanceWindow:
+    inProgress: {{ .Values.inProgress }}
+    reusePVC: {{ .Values.reusePVC }}
+
+  monitoring:
+    enablePodMonitor: {{ .Values.enablePodMonitor }}
