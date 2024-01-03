@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  policy.default: role:admin
+  accounts.backstage: apiKey, login  # Capacidade de login e criação de chave API para o usuário 'backstage'
+  policy.csv: |
+    p, backstage, applications, create, */*, allow
+    p, backstage, applications, update, */*, allow
+    p, backstage, applications, delete, */*, allow
+    p, backstage, applications, sync, */*, allow
+    p, backstage, applications, override, */*, allow
+    p, backstage, applications, action/*, */*, allow
+    p, backstage, applicationsets, get, */*, allow
+    p, backstage, applicationsets, create, */*, allow
+    p, backstage, applicationsets, update, */*, allow
+    p, backstage, applicationsets, delete, */*, allow
+    p, backstage, certificates, create, *, allow
+    p, backstage, certificates, update, *, allow
+    p, backstage, certificates, delete, *, allow
+    p, backstage, clusters, create, *, allow
+    p, backstage, clusters, update, *, allow
+    p, backstage, clusters, delete, *, allow
+    p, backstage, repositories, create, *, allow
+    p, backstage, repositories, update, *, allow
+    p, backstage, repositories, delete, *, allow
+    p, backstage, projects, create, *, allow
+    p, backstage, projects, update, *, allow
+    p, backstage, projects, delete, *, allow
+    p, backstage, accounts, update, *, allow
+    p, backstage, gpgkeys, create, *, allow
+    p, backstage, gpgkeys, delete, *, allow
+    p, backstage, exec, create, */*, allow

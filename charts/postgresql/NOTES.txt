@@ -1,0 +1,12 @@
+
+Obrigado por instalar o PostgreSQL Operator!
+
+Seu cluster PostgreSQL está agora sendo gerenciado pelo operador.
+
+Para ver o status do cluster, execute:
+
+  kubectl get cluster -n {{ .Release.Namespace }}
+
+Para interagir com o cluster, você pode usar o kubectl ou outras ferramentas compatíveis com o Kubernetes.
+
+Para mais informações e documentação, veja o README.md do chart.
