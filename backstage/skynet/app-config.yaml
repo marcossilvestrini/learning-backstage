@@ -105,15 +105,27 @@ scaffolder:
 catalog:
   orphanStrategy: delete
   processingInterval: { seconds: 10 }
-  import:
-    entityFilename: catalog-info.yaml
-    pullRequestBranchName: backstage-integration
-  rules:
-    - allow: [Component, System, API, Resource, Location]
+  # import:
+  #   entityFilename: catalog-info.yaml
+  #   pullRequestBranchName: backstage-integration
+  # rules:
+  #   - allow: [Component, System, API, Resource, Location]
   locations:
+     # Gitlab organization
+    - type: url
+      target: https://gitlab.com/silvestrini-skynet/backstage/organization/blob/main/all-orgs.yaml
+      rules:
+        - allow: [Group, User]
+
+    # Gitlab templates
+    - type: url
+      target: https://gitlab.com/silvestrini-skynet/backstage/templates/blob/main/template.yaml
+      rules:
+        - allow: [Template]
+
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
-    - type: file
-      target: ../../examples/entities.yaml
+    # - type: file
+    #   target: ../../examples/entities.yaml
 
     # Local example template
     # - type: file
@@ -121,17 +133,11 @@ catalog:
     #   rules:
     #     - allow: [Template]
 
-    # Gitlab templates
-    - type: url
-      target: https://gitlab.com/silvestrini-skynet/backstage/templates/blob/main/template.yaml?
-      rules:
-        - allow: [Template]
-
-    # Local example organizational data
-    - type: file
-      target: ../../examples/org.yaml
-      rules:
-        - allow: [User, Group]
+    # # Local example organizational data
+    # - type: file
+    #   target: ../../examples/org.yaml
+    #   rules:
+    #     - allow: [User, Group]
 
     ## Uncomment these lines to add more example data
     # - type: url

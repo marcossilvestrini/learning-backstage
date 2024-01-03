@@ -10,15 +10,11 @@
 
 # Learning Backstage
 
-## Docs
-
-[Official Documentation](https://backstage.io/docs/overview/what-is-backstage>)
-[Auth](https://github.com/RoadieHQ/backstage-auth-example/blob/main/README.md)
-
 ## Get Started
 
-[Backstage Tutorial](https://backstage.io/docs/getting-started/)
-[Spotify Tutorial](https://backstage.spotify.com/blog/introducing-backstage-learn)
+- [Getting Started](https://backstage.io/docs/getting-started/)
+- [Spotify Tutorial](https://backstage.spotify.com/blog/introducing-backstage-learn)
+
 
 ## Configure Postgresql
 
@@ -383,14 +379,28 @@ async function main() {
 
 ## Build Docker Image
 
-### Gitlab ci
+### Build Local
+
+```sh
+DOCKER_USERNAME=skynet
+DOCKER_PASSWORD=sarah_conor
+yarn install --frozen-lockfile
+yarn tsc
+yarn build:backend --config ../../app-config.yaml
+echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" 
+docker image build . -f packages/backend/Dockerfile --tag backstage:latest
+docker tag backstage:latest $DOCKER_USERNAME/backstage:latest
+docker push $DOCKER_USERNAME/backstage:latest
+```
+
+### Build With Gitlab CI
 
 ```yaml
-# Build Backstage
 image: node:18
 
 stages:
   - build
+  - docker-build-and-push
 
 cache:
   paths:
@@ -408,14 +418,39 @@ build_backstage:
     paths:
       - packages/backend/dist/
   rules:
-      - if: '$CI_PIPELINE_SOURCE == "push"'
-        when: always
-      - when: manual
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      when: always
+    - when: manual
+
+docker_build_and_push:
+  image: docker:20.10.8
+  services:
+    - docker:dind
+  stage: docker-build-and-push
+  before_script:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  script:
+    - docker image build . -f packages/backend/Dockerfile --tag backstage:latest
+    - docker tag backstage:latest $DOCKER_USERNAME/backstage:latest
+    - docker push $DOCKER_USERNAME/backstage:latest
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      when: always
+    - when: manual
 ```
 
 ### Pull image
 
+```sh
+docker login
 docker pull mrsilvestrini/backstage
+```
+
+## Test Docker IMage
+
+```sh
+docker run -it -p 7007:7007 backstage
+```
 
 ## Access Backstage remotely
 
@@ -425,3 +460,14 @@ ssh -L 3000:localhost:3000 -L 7007:localhost:7007 vagrant@192.168.0.150
 # Access in browser
 http://localhost:3000
 ```
+
+## References
+
+### Documentation
+
+- [Official Documentation](https://backstage.io/docs/overview/what-is-backstage>)
+- [Demo Auth providers](https://github.com/RoadieHQ/backstage-auth-example/blob/main/README.md)
+
+### Backstage Default Icons
+
+https://github.com/backstage/backstage/blob/master/packages/app-defaults/src/defaults/icons.tsx
